@@ -7,7 +7,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/index.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -129,13 +128,81 @@
 <body>
 <div id="root"></div>
 <script>
-  if (typeof MobileDragDrop !== "undefined") {
-    MobileDragDrop.polyfill({
-      holdToDrag: 0,
-      dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride
-    });
-    window.addEventListener("touchmove", function() {}, { passive: false });
+/* ── Immediate touch-to-drag for mobile/iPad ── */
+(function () {
+  var dragging = false, dragSrc = null, ghost = null, lastOver = null;
+  var offX = 0, offY = 0;
+
+  function makeGhost(src, tx, ty) {
+    var r = src.getBoundingClientRect();
+    offX = tx - r.left;
+    offY = ty - r.top;
+    var g = src.cloneNode(true);
+    g.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;opacity:0.85;'
+      + 'margin:0;transition:none;transform:scale(1.05);'
+      + 'width:' + r.width + 'px;height:' + r.height + 'px;'
+      + 'left:' + r.left + 'px;top:' + r.top + 'px;';
+    document.body.appendChild(g);
+    return g;
   }
+
+  function fire(el, type) {
+    try { el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true })); }
+    catch(e) {
+      var ev = document.createEvent('Event');
+      ev.initEvent(type, true, true);
+      el.dispatchEvent(ev);
+    }
+  }
+
+  function elAt(x, y) {
+    if (ghost) ghost.style.visibility = 'hidden';
+    var el = document.elementFromPoint(x, y);
+    if (ghost) ghost.style.visibility = '';
+    return el;
+  }
+
+  document.addEventListener('touchstart', function (e) {
+    var src = e.target.closest('[draggable="true"]');
+    if (!src) return;
+    e.preventDefault();
+    var t = e.touches[0];
+    dragging = true; dragSrc = src;
+    ghost = makeGhost(src, t.clientX, t.clientY);
+    fire(src, 'dragstart');
+  }, { passive: false });
+
+  document.addEventListener('touchmove', function (e) {
+    if (!dragging) return;
+    e.preventDefault();
+    var t = e.touches[0];
+    ghost.style.left = (t.clientX - offX) + 'px';
+    ghost.style.top  = (t.clientY - offY) + 'px';
+    var el = elAt(t.clientX, t.clientY);
+    if (el !== lastOver) {
+      if (lastOver) fire(lastOver, 'dragleave');
+      lastOver = el;
+    }
+    if (el) fire(el, 'dragover');
+  }, { passive: false });
+
+  document.addEventListener('touchend', function (e) {
+    if (!dragging) return;
+    var t = e.changedTouches[0];
+    var el = elAt(t.clientX, t.clientY);
+    if (el) fire(el, 'drop');
+    fire(dragSrc, 'dragend');
+    ghost.remove();
+    ghost = null; dragging = false; dragSrc = null; lastOver = null;
+  }, { passive: false });
+
+  document.addEventListener('touchcancel', function () {
+    if (!dragging) return;
+    fire(dragSrc, 'dragend');
+    if (ghost) ghost.remove();
+    ghost = null; dragging = false; dragSrc = null; lastOver = null;
+  });
+})();
 </script>
 <script type="text/babel">
 const { useState, useReducer, useCallback, useRef, useEffect } = React;
