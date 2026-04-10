@@ -131,7 +131,7 @@
 <script>
   if (typeof MobileDragDrop !== "undefined") {
     MobileDragDrop.polyfill({
-      holdToDrag: 50,
+      holdToDrag: 0,
       dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride
     });
     window.addEventListener("touchmove", function() {}, { passive: false });
