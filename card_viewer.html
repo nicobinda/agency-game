@@ -142,8 +142,8 @@ const CARDS_DATA = {"clients": [{"id": "client-001", "name": "Galería Emergente
     return g;
   }
 
-  function fire(el, type) {
-    try { el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true })); }
+  function fire(el, type, cx, cy) {
+    try { el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, clientX: cx||0, clientY: cy||0 })); }
     catch(e) {
       var ev = document.createEvent('Event');
       ev.initEvent(type, true, true);
@@ -176,18 +176,18 @@ const CARDS_DATA = {"clients": [{"id": "client-001", "name": "Galería Emergente
     ghost.style.top  = (t.clientY - offY) + 'px';
     var el = elAt(t.clientX, t.clientY);
     if (el !== lastOver) {
-      if (lastOver) fire(lastOver, 'dragleave');
+      if (lastOver) fire(lastOver, 'dragleave', t.clientX, t.clientY);
       lastOver = el;
     }
-    if (el) fire(el, 'dragover');
+    if (el) fire(el, 'dragover', t.clientX, t.clientY);
   }, { passive: false });
 
   document.addEventListener('touchend', function (e) {
     if (!dragging) return;
     var t = e.changedTouches[0];
     var el = elAt(t.clientX, t.clientY);
-    if (el) fire(el, 'drop');
-    fire(dragSrc, 'dragend');
+    if (el) fire(el, 'drop', t.clientX, t.clientY);
+    fire(dragSrc, 'dragend', t.clientX, t.clientY);
     ghost.remove();
     ghost = null; dragging = false; dragSrc = null; lastOver = null;
   }, { passive: false });
