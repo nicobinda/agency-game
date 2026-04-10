@@ -116,10 +116,10 @@
     .mkt-divider { height:1px; background:#1e2130; flex-shrink:0; }
     .empty-zone { display:flex; align-items:center; justify-content:center; color:#2a2f40; font-size:15px; text-align:center; flex:1; pointer-events:none; }
     .mkt-size-ctrl { display:flex; align-items:center; gap:5px; padding:5px 10px; font-size:13px; color:#64748b; border-bottom:1px solid #1e2130; }
-    .resize-handle-h { height:5px; min-height:5px; background:#1a1d27; cursor:row-resize; flex-shrink:0; border-top:1px solid #1e2130; border-bottom:1px solid #1e2130; transition:background .15s; }
+    .resize-handle-h { height:12px; min-height:12px; background:#1a1d27; cursor:row-resize; flex-shrink:0; border-top:1px solid #1e2130; border-bottom:1px solid #1e2130; transition:background .15s; }
     .resize-handle-h:hover { background:#4f46e5; }
     .resize-handle-h.active { background:#6366f1; }
-    .resize-handle { width:5px; min-width:5px; background:#1a1d27; cursor:col-resize; flex-shrink:0; border-left:1px solid #1e2130; border-right:1px solid #1e2130; transition:background .15s; }
+    .resize-handle { width:12px; min-width:12px; background:#1a1d27; cursor:col-resize; flex-shrink:0; border-left:1px solid #1e2130; border-right:1px solid #1e2130; transition:background .15s; }
     .resize-handle:hover { background:#4f46e5; }
     .resize-handle.active { background:#6366f1; }
     .mkt-size-val { font-weight:700; color:#94a3b8; min-width:14px; text-align:center; }
@@ -1666,19 +1666,21 @@ function App() {
   const insertRef = useRef(null);   // { zone, uid, after } — kept in sync with state for use in callbacks
   const [insertPoint, setInsertPoint] = useState(null);
   const setInsert = useCallback((v) => { insertRef.current = v; setInsertPoint(v); }, []);
-  const [cardZoom, setCardZoom] = useState(1.0);
-  const [rightWidth, setRightWidth] = useState(584);
+  const isMobile = window.innerWidth < 1024;
+  const [cardZoom, setCardZoom] = useState(isMobile ? 0.8 : 1.0);
+  const [rightWidth, setRightWidth] = useState(isMobile ? 409 : 584);
   const isResizingRef = useRef(false);
   const [isResizing, setIsResizing] = useState(false);
 
   const startResize = useCallback((e) => {
     e.preventDefault();
-    const startX     = e.clientX;
+    const startX     = e.touches ? e.touches[0].clientX : e.clientX;
     const startWidth = rightWidth;
     isResizingRef.current = true;
     setIsResizing(true);
     const onMove = (ev) => {
-      const delta    = startX - ev.clientX;
+      const cx    = ev.touches ? ev.touches[0].clientX : ev.clientX;
+      const delta = startX - cx;
       const newWidth = Math.max(160, Math.min(680, startWidth + delta));
       setRightWidth(newWidth);
     };
@@ -1687,21 +1689,26 @@ function App() {
       setIsResizing(false);
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup',   onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend',  onUp);
     };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup',   onUp);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend',  onUp);
   }, [rightWidth]);
 
-  const [handHeight, setHandHeight] = useState(206);
+  const [handHeight, setHandHeight] = useState(isMobile ? 155 : 206);
   const [isResizingH, setIsResizingH] = useState(false);
 
   const startHandResize = useCallback((e) => {
     e.preventDefault();
-    const startY      = e.clientY;
+    const startY      = e.touches ? e.touches[0].clientY : e.clientY;
     const startHeight = handHeight;
     setIsResizingH(true);
     const onMove = (ev) => {
-      const delta     = startY - ev.clientY;   // drag up → hand taller
+      const cy    = ev.touches ? ev.touches[0].clientY : ev.clientY;
+      const delta = startY - cy;   // drag up → hand taller
       const newHeight = Math.max(80, Math.min(500, startHeight + delta));
       setHandHeight(newHeight);
     };
@@ -1709,9 +1716,13 @@ function App() {
       setIsResizingH(false);
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup',   onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend',  onUp);
     };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup',   onUp);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend',  onUp);
   }, [handHeight]);
 
   // ── Hover Preview ──
@@ -1919,6 +1930,7 @@ function App() {
           <div
             className={`resize-handle-h${isResizingH ? ' active' : ''}`}
             onMouseDown={startHandResize}
+            onTouchStart={startHandResize}
             title="Arrastrá para redimensionar la mano"
           />
 
@@ -1949,6 +1961,7 @@ function App() {
         <div
           className={`resize-handle${isResizing ? ' active' : ''}`}
           onMouseDown={startResize}
+          onTouchStart={startResize}
           title="Arrastrá para redimensionar el mercado"
         />
 
