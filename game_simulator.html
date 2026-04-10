@@ -1096,7 +1096,7 @@ function reducer(state, action) {
         discardNote = ` · 🗑️ descarte ${n}`;
       }
 
-      // ── 1. Level-up: clients that have resources for their next level ────────
+      // ── 1. Level-up: find the highest level the client can reach ───────────
       const levelUps = [];
       s = {
         ...s,
@@ -1105,12 +1105,19 @@ function reducer(state, action) {
           const cur = card.currentLevel || 1;
           const maxLvl = (card.levels || []).length;
           if (cur >= maxLvl) return card; // already at max
-          const nextDef = getLvl(card, cur + 1);
-          if (!nextDef) return card;
           const pool = sumResources(card.assignedTalents);
-          if (satisfies(pool, nextDef.requirements)) {
-            levelUps.push(card.name);
-            return { ...card, currentLevel: cur + 1 };
+          // Find the highest level achievable (skip levels if resources allow)
+          let newLevel = cur;
+          for (let lvl = maxLvl; lvl > cur; lvl--) {
+            const def = getLvl(card, lvl);
+            if (def && satisfies(pool, def.requirements)) {
+              newLevel = lvl;
+              break;
+            }
+          }
+          if (newLevel > cur) {
+            levelUps.push(`${card.name} → nivel ${newLevel}`);
+            return { ...card, currentLevel: newLevel };
           }
           return card;
         }),
