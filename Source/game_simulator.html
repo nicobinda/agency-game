@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Agency Game — Simulador</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f1117; color: #e2e8f0; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #1a1d27; }
+    ::-webkit-scrollbar-thumb { background: #3a3f55; border-radius: 3px; }
+    /* Card type styles (required by card components) */
+    .card-talento    { border-color: #9490cc; }
+    .card-cliente    { border-color: #7aaa90; }
+    .card-inversion  { border-color: #c4a060; }
+    .card-estrategia { border-color: #9a80b8; }
+    .card-urgente    { border-color: #cc7070; }
+    .badge { display:inline-flex; align-items:center; gap:3px; padding:2px 8px; border-radius:999px; font-size:14px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+    .badge-talento    { background:#312e81; color:#a5b4fc; }
+    .badge-cliente    { background:#064e3b; color:#6ee7b7; }
+    .badge-inversion  { background:#451a03; color:#fcd34d; }
+    .badge-estrategia { background:#3b0764; color:#d8b4fe; }
+    .badge-urgente    { background:#450a0a; color:#fca5a5; }
+    .mission-arte          { background:#4c1d95; color:#c4b5fd; }
+    .mission-deporte       { background:#431407; color:#fed7aa; }
+    .mission-entretenimiento { background:#3f3401; color:#fef08a; }
+    .mission-finanzas      { background:#052e16; color:#86efac; }
+    .mission-gastronomia   { background:#1a2e05; color:#bef264; }
+    .mission-naturaleza    { background:#042f2e; color:#99f6e4; }
+    .mission-retail        { background:#082f49; color:#7dd3fc; }
+    .mission-tecnologia    { background:#172554; color:#93c5fd; }
+    .mission-viajes        { background:#1e1b4b; color:#c7d2fe; }
+    .resource-group { display:inline-flex; align-items:center; gap:2px; margin:2px 3px 2px 0; }
+    .resource-qty { font-size:14px; font-weight:700; color:#f1f5f9; line-height:1; }
+    .flex-badge { font-size:12px; font-weight:800; color:#94a3b8; background:#1e2130; border-radius:999px; padding:1px 4px; border:1px dashed #3a3f55; margin-left:1px; }
+    .card-item { border:1.5px solid; border-radius:8px; cursor:pointer; position:relative; overflow:hidden; flex-shrink:0; background:#eeeae4; }
+    .card-art { background:#C2AA88; }
+    .card-divider { border:none; border-top:1px solid #ccc7be; margin:0; }
+    .mission-bg-arte            { background:#ede8f2; border-color:#b8a8d0 !important; }
+    .mission-bg-deporte         { background:#e6eef5; border-color:#90aac4 !important; }
+    .mission-bg-entretenimiento { background:#f5ede8; border-color:#c8a890 !important; }
+    .mission-bg-finanzas        { background:#e6ede4; border-color:#90aa88 !important; }
+    .mission-bg-gastronomia     { background:#f5ede0; border-color:#c8a870 !important; }
+    .mission-bg-naturaleza      { background:#e8f0e8; border-color:#88aa88 !important; }
+    .mission-bg-retail          { background:#ede8f0; border-color:#b0a0c8 !important; }
+    .mission-bg-tecnologia      { background:#e4eaf5; border-color:#8898c8 !important; }
+    .mission-bg-viajes          { background:#e6f4f0; border-color:#78aaa0 !important; }
+    .card-portrait  { width:220px; height:308px; }
+    .card-landscape { width:390px; height:272px; }
+    /* ── Simulator layout ── */
+    .sim-statusbar { background:#13161f; border-bottom:1px solid #1e2130; padding:7px 14px; display:flex; align-items:center; gap:8px; flex-shrink:0; flex-wrap:wrap; min-height:58px; }
+    .sim-board { flex:1; display:flex; min-height:0; overflow:hidden; }
+    .sim-left { width:130px; min-width:130px; background:#0d1019; border-right:1px solid #1e2130; display:flex; flex-direction:column; gap:8px; padding:10px 7px; overflow-y:auto; flex-shrink:0; }
+    .sim-center { flex:1; display:flex; flex-direction:column; min-width:0; overflow:hidden; }
+    .sim-mesa { flex:1; overflow:auto; background:#0f1117; position:relative; min-height:80px; }
+    .sim-hand { min-height:80px; background:#0d1019; border-top:1px solid #1e2130; padding:8px 12px; display:flex; align-items:center; gap:7px; overflow-x:auto; overflow-y:hidden; flex-shrink:0; }
+    .sim-right { min-width:160px; background:#0d1019; border-left:1px solid #1e2130; display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; }
+    .sim-market-section { display:flex; flex-direction:column; overflow:hidden; }
+    .sim-market-scroll { overflow-y:auto; padding:8px 7px; display:flex; flex-wrap:wrap; flex-direction:row; gap:8px; align-content:flex-start; }
+    /* ── Drop zone highlight ── */
+    .insert-line { width:3px; min-height:24px; background:rgba(99,102,241,0.9); border-radius:3px; align-self:stretch; flex-shrink:0; animation:insert-pulse .5s ease-in-out infinite alternate; }
+    @keyframes insert-pulse { from{opacity:.55} to{opacity:1} }
+    .drop-active { outline:2px dashed rgba(99,102,241,0.75) !important; background:rgba(99,102,241,0.06) !important; }
+    .drop-active-green { outline:2px dashed rgba(52,211,153,0.75) !important; background:rgba(52,211,153,0.06) !important; }
+    .drop-active-red   { outline:2px dashed rgba(248,113,113,0.65) !important; background:rgba(248,113,113,0.05) !important; }
+    /* ── Deck piles ── */
+    .deck-pile { background:#1a1d27; border:1.5px solid #2d3347; border-radius:8px; padding:7px 5px; cursor:pointer; user-select:none; transition:background .15s; display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .deck-pile:hover { background:#1e2335; }
+    .deck-pile-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:#64748b; text-align:center; }
+    .deck-pile-count { font-size:22px; font-weight:900; line-height:1; }
+    .deck-pill-btn { font-size:10px; background:#252a3a; border:none; color:#94a3b8; border-radius:4px; padding:2px 6px; cursor:pointer; }
+    .deck-pill-btn:hover { background:#2d3347; color:#e2e8f0; }
+    /* ── Stat tiles ── */
+    .stat-tile { display:flex; flex-direction:column; align-items:center; gap:1px; background:#1a1d27; border:1px solid #2d3347; border-radius:8px; padding:4px 8px; min-width:64px; }
+    .stat-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#64748b; }
+    .stat-value { font-size:23px; font-weight:900; line-height:1; }
+    .stat-controls { display:flex; gap:3px; margin-top:2px; }
+    .stat-btn { width:19px; height:19px; border-radius:4px; border:none; cursor:pointer; font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center; background:#252a3a; color:#94a3b8; }
+    .stat-btn:hover { background:#2d3347; color:#e2e8f0; }
+    /* ── Card scaled ── */
+    .card-scaled { position:relative; flex-shrink:0; cursor:pointer; border-radius:6px; overflow:hidden; transition:transform .12s, box-shadow .12s; }
+    .card-scaled:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,0,0,.4); }
+    .card-scaled[draggable="true"]:active { opacity:0.7; }
+    .card-scaled-inner { position:absolute; top:0; left:0; pointer-events:none; transform-origin:top left; }
+    /* ── Context menu ── */
+    .ctx-overlay { position:fixed; inset:0; z-index:200; }
+    .ctx-menu { position:fixed; z-index:201; background:#13161f; border:1px solid #2d3347; border-radius:10px; padding:6px; min-width:168px; box-shadow:0 8px 32px rgba(0,0,0,.6); }
+    .ctx-title { padding:5px 9px 4px; font-size:14px; font-weight:700; color:#f1f5f9; border-bottom:1px solid #1e2130; margin-bottom:3px; }
+    .ctx-sub { font-size:12px; color:#64748b; font-weight:400; margin-top:1px; }
+    .ctx-btn { width:100%; text-align:left; padding:6px 9px; border-radius:5px; border:none; background:transparent; color:#94a3b8; cursor:pointer; font-size:15px; display:flex; align-items:center; gap:6px; }
+    .ctx-btn:hover { background:#1e2130; color:#f1f5f9; }
+    .ctx-btn.danger:hover { background:#2d1515; color:#fca5a5; }
+    /* ── Zone labels ── */
+    .zone-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#2a3050; padding:4px 12px; border-bottom:1px solid #181b26; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; }
+    .zone-label-right { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:#3a4060; padding:6px 10px 4px; border-bottom:1px solid #1e2130; flex-shrink:0; display:flex; align-items:center; gap:6px; }
+    /* ── Misc ── */
+    .end-turn-btn { padding:5px 13px; border-radius:7px; border:none; cursor:pointer; background:#4f46e5; color:white; font-size:15px; font-weight:700; white-space:nowrap; margin-left:auto; }
+    .end-turn-btn:hover { background:#6366f1; }
+    .reset-btn { padding:4px 9px; border-radius:6px; border:1px solid #2d3347; cursor:pointer; background:transparent; color:#64748b; font-size:14px; }
+    .reset-btn:hover { background:#1e2130; color:#94a3b8; }
+    .load-set-btn { padding:4px 10px; border-radius:6px; border:1px solid #2d3347; cursor:pointer; background:transparent; color:#64748b; font-size:12px; font-weight:600; white-space:nowrap; display:flex; align-items:center; gap:4px; }
+    .load-set-btn:hover { background:#1e2130; color:#94a3b8; }
+    .sep { width:1px; height:34px; background:#1e2130; flex-shrink:0; }
+    .turn-badge { background:#1a1d27; border:1px solid #2d3347; border-radius:20px; padding:4px 11px; font-size:13px; font-weight:700; color:#4f46e5; white-space:nowrap; }
+    .turn-number { font-size:22px; }
+    .detail-overlay { position:fixed; inset:0; background:rgba(0,0,0,.8); display:flex; align-items:center; justify-content:center; z-index:300; padding:20px; }
+    .detail-box { background:#13161f; border:1px solid #2d3347; border-radius:12px; max-height:92vh; overflow-y:auto; display:flex; flex-direction:column; align-items:center; padding:18px; gap:12px; }
+    .detail-close-btn { background:#1e2130; border:1px solid #2d3347; color:#94a3b8; cursor:pointer; font-size:15px; padding:5px 12px; border-radius:6px; align-self:flex-end; }
+    .detail-close-btn:hover { color:#f1f5f9; }
+    .mkt-divider { height:1px; background:#1e2130; flex-shrink:0; }
+    .empty-zone { display:flex; align-items:center; justify-content:center; color:#2a2f40; font-size:15px; text-align:center; flex:1; pointer-events:none; }
+    .mkt-size-ctrl { display:flex; align-items:center; gap:5px; padding:5px 10px; font-size:13px; color:#64748b; border-bottom:1px solid #1e2130; }
+    .resize-handle-h { height:5px; min-height:5px; background:#1a1d27; cursor:row-resize; flex-shrink:0; border-top:1px solid #1e2130; border-bottom:1px solid #1e2130; transition:background .15s; }
+    .resize-handle-h:hover { background:#4f46e5; }
+    .resize-handle-h.active { background:#6366f1; }
+    .resize-handle { width:5px; min-width:5px; background:#1a1d27; cursor:col-resize; flex-shrink:0; border-left:1px solid #1e2130; border-right:1px solid #1e2130; transition:background .15s; }
+    .resize-handle:hover { background:#4f46e5; }
+    .resize-handle.active { background:#6366f1; }
+    .mkt-size-val { font-weight:700; color:#94a3b8; min-width:14px; text-align:center; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useReducer, useCallback, useRef, useEffect } = React;
+const CARDS_DATA = {"clients":[{"id":"Cliente-3-001","type":"cliente","name":"Arte 1","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null},{"level":3,"requirements":[{"type":"creativo","qty":2},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-002","type":"cliente","name":"Arte 2","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null}]},{"id":"Cliente-3-003","type":"cliente","name":"Arte 3","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"desarrollo","qty":1}],"fee":5,"cultureRequirement":null}]},{"id":"Cliente-3-004","type":"cliente","name":"Deporte 1","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null},{"level":3,"requirements":[{"type":"analista","qty":2},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-005","type":"cliente","name":"Deporte 2","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null}]},{"id":"Cliente-3-006","type":"cliente","name":"Deporte 3","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"creativo","qty":1}],"fee":5,"cultureRequirement":null}]},{"id":"Cliente-3-007","type":"cliente","name":"Entretenimiento 1","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null},{"level":3,"requirements":[{"type":"desarrollo","qty":2},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-008","type":"cliente","name":"Entretenimiento 2","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null}]},{"id":"Cliente-3-009","type":"cliente","name":"Entretenimiento 3","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"analista","qty":1}],"fee":5,"cultureRequirement":null}]},{"id":"Cliente-3-010","type":"cliente","name":"Viajes 1","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1}],"fee":6,"cultureRequirement":null}]},{"id":"Cliente-3-011","type":"cliente","name":"Viajes 2","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1}],"fee":6,"cultureRequirement":null}]},{"id":"Cliente-3-012","type":"cliente","name":"Viajes 3","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1}],"fee":6,"cultureRequirement":null}]},{"id":"Cliente-3-013","type":"cliente","name":"Gastronomía 1","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":2}],"fee":5,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-014","type":"cliente","name":"Gastronomía 2","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":2}],"fee":5,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-015","type":"cliente","name":"Gastronomía 3","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":2}],"fee":5,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]}],"talents":[{"id":"Talento-3-001","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-002","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-003","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-004","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-005","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-006","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-007","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-008","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-009","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-010","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-011","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-012","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-013","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-014","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-015","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-016","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-017","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-018","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-019","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-020","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-021","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-022","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-023","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-024","type":"talento","name":"AA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"analista","qty":2}],"effects":[]},{"id":"Talento-3-025","type":"talento","name":"CC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"creativo","qty":2}],"effects":[]},{"id":"Talento-3-026","type":"talento","name":"DD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":2}],"effects":[]},{"id":"Talento-3-027","type":"talento","name":"MA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-028","type":"talento","name":"MC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-029","type":"talento","name":"MD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"desarrollo","qty":1}],"effects":[]}],"investments":[{"id":"inv-3-001","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-002","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-003","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-004","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"inv-3-005","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"Inv-3-006","type":"inversion","name":"Extra Card 1","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Roba 1 carta adicional al inicio de tu turno"}]},{"id":"Inv-3-006","type":"inversion","name":"Hand Size 1","flavorText":"","artDescription":"","artImage":null,"cost":5,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Puedes tener hasta 6 cartas en la mano"}]}],"strategies":[{"id":"estrategia-3-001","type":"estrategia","name":"Card Draw 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba dos cartas"}]},{"id":"estrategia-3-002","type":"estrategia","name":"Card Draw 3","flavorText":"","artDescription":"","artImage":null,"cost":7,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba 3 cartas"}]},{"id":"estrategia-3-003","type":"estrategia","name":"Destroy","flavorText":"","artDescription":"","artImage":null,"cost":10,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Mueve una carta del campo de juego de un oponente al descarte"}]},{"id":"estrategia-3-004","type":"estrategia","name":"Steal Talent","flavorText":"","artDescription":"","artImage":null,"cost":12,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Intercambia el control de un talento en tu zona de juego por un talento en la zona de juego de un oponente"}]}],"urgent_actions":[{"id":"urgent-3-001","type":"accion_urgente","name":"Card Cycle 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Mueve una carta del mercado al descarte"}]},{"id":"urgent-3-002","type":"accion_urgente","name":"Card Swap 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Intercambia una carta de tu mano por una carta del mercado"}]},{"id":"urgent-3-003","type":"accion_urgente","name":"Counter 1","flavorText":"","artDescription":"","artImage":null,"cost":3,"bgColor":"#3D1515","effects":[{"description":"Cancela el efecto de una carta de Estrategia o de Acción Urgente."}]},{"id":"urgent-3-004","type":"accion_urgente","name":"Card Cycle 2","flavorText":"","artDescription":"","artImage":null,"cost":4,"bgColor":"#3D1515","effects":[{"description":"Mueve dos cartas del mercado al descarte"}]},{"id":"urgent-3-005","type":"accion_urgente","name":"Card Swap 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"bgColor":"#3D1515","effects":[{"description":"Intercambia dos cartas de tu mano por dos cartas en el Mercado"}]}]};
+const RESOURCE_COLORS = {
+  creativo:   '#DE6834',
+  desarrollo: '#73C76C',
+  analista:   '#3A77E3',
+  manager:    '#142954',
+  hibrido:    '#0B76F0',
+};
+
+const RESOURCE_LABELS = {
+  creativo:   'Creativo',
+  desarrollo: 'Desarrollo',
+  analista:   'Analista',
+  manager:    'Manager',
+  hibrido:    'Híbrido',
+};
+
+const RESOURCE_SVG = {
+  analista: {
+    color: '#0B76F0',
+    d: 'M425.671 232.682C391.601 199.484 335.722 157 272.5 157C209.278 157 153.399 199.447 119.329 232.682C97.5571 253.906 97.5571 289.057 119.329 310.318C153.399 343.516 209.278 386 272.5 386C335.722 386 391.601 343.553 425.671 310.318C447.443 289.094 447.443 253.943 425.671 232.682ZM325.075 297.569L298.494 324.246C284.139 338.652 260.898 338.652 246.543 324.246L219.962 297.569C205.607 283.162 205.607 259.838 219.962 245.431L246.543 218.754C260.898 204.348 284.139 204.348 298.494 218.754L325.075 245.431C339.43 259.838 339.43 283.162 325.075 297.569Z',
+  },
+  creativo: {
+    color: '#EF5F1F',
+    d: 'M250.354 142.143L99.2855 237.364C76.9798 251.41 87.0398 285.587 113.469 285.587H226.605C241.201 285.587 253.034 297.306 253.034 311.761V378.808C253.034 399.428 276.041 411.964 293.646 400.857L444.715 305.636C467.02 291.59 456.96 257.413 430.531 257.413H317.395C302.799 257.413 290.966 245.694 290.966 231.239V164.192C290.966 143.572 267.96 131.036 250.354 142.143Z',
+  },
+  desarrollo: {
+    color: '#4DCB5F',
+    d: 'M372.28 292.456C360.655 280.873 360.655 262.127 372.28 250.544L404.281 218.659C415.906 207.076 415.906 188.33 404.281 176.747L368.091 140.687C356.465 129.104 337.651 129.104 326.026 140.687L293.532 173.063C281.907 184.646 263.093 184.646 251.468 173.063L218.974 140.687C207.349 129.104 188.535 129.104 176.909 140.687L140.719 176.747C129.094 188.33 129.094 207.076 140.719 218.659L172.719 250.544C184.345 262.127 184.345 280.873 172.719 292.456L140.719 324.341C129.094 335.924 129.094 354.67 140.719 366.253L176.909 402.313C188.535 413.896 207.349 413.896 218.974 402.313L251.468 369.937C263.093 358.354 281.907 358.354 293.532 369.937L326.026 402.313C337.651 413.896 356.465 413.896 368.091 402.313L404.281 366.253C415.906 354.67 415.906 335.924 404.281 324.341L372.28 292.456ZM321.795 292.456L293.491 320.657C281.866 332.24 263.052 332.24 251.427 320.657L223.123 292.456C211.498 280.873 211.498 262.127 223.123 250.544L251.427 222.343C263.052 210.76 281.866 210.76 293.491 222.343L321.795 250.544C333.42 262.127 333.42 280.873 321.795 292.456Z',
+  },
+  manager: {
+    color: '#B9C5DF',
+    d: 'M367.352 142.049L353.666 201.461C350.767 213.94 358.058 226.547 370.336 230.295L428.701 248.14C451.766 255.209 451.766 287.79 428.701 294.86L370.336 312.705C358.058 316.453 350.767 329.06 353.666 341.539L367.352 400.951C372.766 424.418 344.5 440.73 326.85 424.333L282.17 382.765C272.79 374.034 258.21 374.034 248.83 382.765L204.15 424.333C186.5 440.772 158.234 424.46 163.648 400.951L177.334 341.539C180.233 329.06 172.942 316.453 160.664 312.705L102.299 294.86C79.2338 287.79 79.2338 255.209 102.299 248.14L160.664 230.295C172.942 226.547 180.233 213.94 177.334 201.461L163.648 142.049C158.234 118.582 186.5 102.27 204.15 118.667L248.83 160.235C258.21 168.966 272.79 168.966 282.17 160.235L326.85 118.667C344.5 102.228 372.766 118.54 367.352 142.049Z',
+  },
+  hibrido: {
+    circles: [
+      { cx:272, cy:272, r:272, fill:'#0B76F0' },
+      { cx:588, cy:272, r:272, fill:'#EF5F1F' },
+      { cx:-43, cy:272, r:272, fill:'#4DCB5F' },
+    ],
+  },
+};
+
+function ResourceIconSVG({ type, size = 22, half = false }) {
+  const data = RESOURCE_SVG[type];
+  const fallbackColor = RESOURCE_COLORS[type] || '#475569';
+  return (
+    <svg
+      width={half ? size / 2 : size}
+      height={size}
+      viewBox="0 0 544 544"
+      preserveAspectRatio={half ? 'xMinYMid slice' : 'xMidYMid meet'}
+      style={{display:'inline-block', flexShrink:0, overflow:'hidden'}}
+      aria-label={RESOURCE_LABELS[type]||type}
+    >
+      {data && data.circles
+        ? data.circles.map((c,i) => <circle key={i} cx={c.cx} cy={c.cy} r={c.r} fill={c.fill}/>)
+        : <><circle cx="272" cy="272" r="272" fill={data ? data.color : fallbackColor}/>
+            {data && <path d={data.d} fill="white" fillOpacity="0.6"/>}</>
+      }
+    </svg>
+  );
+}
+
+function ResourceDots({ res, iconSize = 22 }) {
+  const qty = res.qty || 1;
+  const showIndividual = qty <= 4;
+  return (
+    <span className="resource-group" title={`${qty} ${RESOURCE_LABELS[res.type]||res.type}${res.flexible?' (flexible)':''}`}>
+      {showIndividual
+        ? Array.from({length:qty}).map((_,i)=><ResourceIconSVG key={i} type={res.type} size={iconSize} half={!!res.flexible}/>)
+        : <><ResourceIconSVG type={res.type} size={iconSize} half={!!res.flexible}/><span className="resource-qty">x{qty}</span></>
+      }
+    </span>
+  );
+}
+
+function ResourceDisplay({ resources, iconSize = 22 }) {
+  if (!resources || resources.length === 0) return null;
+  return (
+    <div style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:2,marginTop:6}}>
+      {resources.map((res,i)=><ResourceDots key={i} res={res} iconSize={iconSize}/>)}
+    </div>
+  );
+}
+
+// ─── TYPE / MISSION CONFIG ────────────────────────────────────────────────────
+
+const TYPE_CONFIG = {
+  talento:       {label:'Talento',        icon:'👤',cls:'talento',    badge:'badge-talento'},
+  cliente:       {label:'Cliente',        icon:'🤝',cls:'cliente',    badge:'badge-cliente'},
+  inversion:     {label:'Inversión',      icon:'🏗️',cls:'inversion',  badge:'badge-inversion'},
+  estrategia:    {label:'Estrategia',     icon:'♟️',cls:'estrategia', badge:'badge-estrategia'},
+  accion_urgente:{label:'Acción Urgente', icon:'⚡',cls:'urgente',    badge:'badge-urgente'},
+};
+
+const MISSIONS = ['arte','deporte','entretenimiento','finanzas','gastronomia','naturaleza','retail','tecnologia','viajes'];
+const MISSION_EMOJI = {arte:'🎨',deporte:'⚽',entretenimiento:'🎭',finanzas:'💰',gastronomia:'🍴',naturaleza:'🌿',retail:'🛍️',tecnologia:'💻',viajes:'✈️'};
+
+const missionBadge = m => !m ? null : <span className={`badge mission-${m}`}>{MISSION_EMOJI[m]} {m.charAt(0).toUpperCase()+m.slice(1)}</span>;
+const typeBadge = t => { const cfg=TYPE_CONFIG[t]||{}; return <span className={`badge ${cfg.badge||''}`}>{cfg.icon} {cfg.label}</span>; };
+
+// ─── CARD GRID ITEMS ─────────────────────────────────────────────────────────
+
+// MoneyTag: renders a monetary value with small K, green for fees/income, red for costs
+function MoneyTag({ amount, type = 'cost', style = {} }) {
+  if (amount === undefined || amount === null) return null;
+  const color = type === 'fee' ? '#4ade80' : '#f87171';
+  return (
+    <span style={{ color, fontWeight: 700, whiteSpace: 'nowrap', ...style }}>
+      {amount}<span style={{ fontSize: '0.68em', fontWeight: 600, marginLeft: '1px', opacity: 0.85 }}>K</span>
+    </span>
+  );
+}
+const CostDisplay = ({cost}) => <MoneyTag amount={cost} type="cost"/>;
+
+// ── Shared sub-components ────────────────────────────────────────────────────
+
+function CultureReq({ value }) {
+  if (!value || value <= 0) return null;
+  return (
+    <div style={{fontSize:8.5, color:'#888', fontWeight:700, lineHeight:1.2, letterSpacing:'0.3px'}}>
+      ✦{value}
+    </div>
+  );
+}
+
+function CostBox({ cost, recurring, align='center', bigSize=22 }) {
+  const isRed = recurring;
+  const display = recurring ? cost : (cost || 0);
+  const color = isRed ? '#cc2222' : '#111111';
+  return (
+    <div style={{
+      borderLeft:'1px solid #ccc7be', padding:'4px 9px', textAlign:align,
+      display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center',
+      minWidth:54, flexShrink:0, alignSelf:'stretch'
+    }}>
+      <CultureReq value={0}/>
+      <div style={{fontSize:bigSize, fontWeight:900, lineHeight:1, color, fontFamily:'Inter,sans-serif'}}>
+        {display}<span style={{fontSize:bigSize*0.52, fontWeight:700}}>K</span>
+      </div>
+      {isRed && <div style={{fontSize:7.5, color:'#cc2222', fontWeight:700, lineHeight:1.3}}>por turno</div>}
+    </div>
+  );
+}
+
+// ── TALENTO ──────────────────────────────────────────────────────────────────
+function CardTalento({card}) {
+  const resources = card.resources || [];
+  const sorted = [...resources].sort((a,b) => a.type==='manager' ? -1 : b.type==='manager' ? 1 : 0);
+  const displayCost = (card.recurringCost || 0) > 0 ? card.recurringCost : (card.cost || 0);
+  const mision = card.mision || '';
+  const missionColor = mision ? (MISSION_COLOR_MAP[mision] || '#9D846B') : '#6B7280';
+
+  // Flatten resource icons, max 3 total
+  const icons = sorted.flatMap(res =>
+    Array.from({length: Math.min(res.qty||1, 2)}).map((_,i) => ({ type:res.type, key:`${res.type}-${i}` }))
+  ).slice(0, 3);
+
+  const BAR_W = 10;
+  const L = BAR_W + 10;   // content left edge
+
+  return (
+    <div style={{position:'relative', width:'100%', height:'100%', overflow:'hidden', borderRadius:'inherit'}}>
+
+      {/* ── Background (gray placeholder → artwork) ── */}
+      <div style={{position:'absolute', inset:0, background:'#888'}}/>
+
+      {/* ── Left mission color bar ── */}
+      <div style={{position:'absolute', left:0, top:0, bottom:0, width:BAR_W, background:missionColor}}/>
+
+      {/* ── Name banner ── */}
+      <div style={{
+        position:'absolute', top:8, left:L, right:8, height:32,
+        background:'white', borderRadius:7,
+        display:'flex', alignItems:'center', padding:'0 10px',
+        boxShadow:'0 2px 12px rgba(0,0,0,0.28)',
+      }}>
+        <span style={{
+          fontFamily:"'Instrument Sans', sans-serif",
+          fontWeight:700, fontSize:12, color:'#111',
+          overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+        }}>
+          {card.name.toUpperCase()}
+        </span>
+      </div>
+
+      {/* ── Cost block ── */}
+      <div style={{
+        position:'absolute', top:48, left:L,
+        width:68, height:70,
+        background:'#D94242', borderRadius:9,
+        display:'flex', flexDirection:'column',
+        alignItems:'center', justifyContent:'center', gap:1,
+        boxShadow:'0 2px 8px rgba(0,0,0,0.22)',
+      }}>
+        <div style={{
+          fontFamily:"'Instrument Sans', sans-serif",
+          fontWeight:900, fontSize:26, color:'white', lineHeight:1,
+        }}>
+          {displayCost}<span style={{fontSize:12, fontWeight:700}}>K</span>
+        </div>
+        <div style={{
+          fontFamily:"'Instrument Sans', sans-serif",
+          fontSize:8, color:'rgba(255,255,255,0.88)', fontWeight:600,
+        }}>por turno</div>
+        {card.cultureRequirement && (
+          <div style={{
+            fontFamily:"'Instrument Sans', sans-serif",
+            fontSize:8, color:'rgba(255,255,255,0.75)', fontWeight:600, marginTop:1,
+          }}>✦ {card.cultureRequirement}</div>
+        )}
+      </div>
+
+      {/* ── Resource icons (stacked below cost block) ── */}
+      <div style={{
+        position:'absolute', top:126, left:L + 6,
+        display:'flex', flexDirection:'column', gap:6,
+        zIndex:1,
+      }}>
+        {icons.map(ic => (
+          <ResourceIconSVG key={ic.key} type={ic.type} size={28}/>
+        ))}
+      </div>
+
+      {/* ── Bottom dark panel ── */}
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0, height:86,
+        background:'rgba(0,0,0,0.5)',
+        padding:'8px 11px 8px',
+        display:'flex', flexDirection:'column', justifyContent:'space-between',
+      }}>
+        {card.effects && card.effects.length > 0 && (
+          <div style={{
+            fontFamily:"'Instrument Sans', sans-serif",
+            fontSize:9, color:'rgba(255,255,255,0.92)', lineHeight:1.45,
+            display:'-webkit-box', WebkitLineClamp:4, WebkitBoxOrient:'vertical', overflow:'hidden',
+          }}>
+            {card.effects[0].description}
+          </div>
+        )}
+        {card.flavorText && (
+          <div style={{
+            fontFamily:"'Instrument Serif', serif",
+            fontStyle:'italic', fontSize:8,
+            color:'rgba(255,255,255,0.6)', lineHeight:1.4,
+            display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden',
+          }}>
+            &ldquo;{card.flavorText}&rdquo;
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+// ── CLIENTE (landscape) ──────────────────────────────────────────────────────
+const MISSION_STRIP_COLORS = {
+  arte:'#8a70a8', deporte:'#4a7a9a', entretenimiento:'#b07858',
+  finanzas:'#4a7a58', gastronomia:'#b08838', naturaleza:'#4a8858',
+  retail:'#7860a0', tecnologia:'#4862a8', viajes:'#3a8888'
+};
+
+const MISSION_BG_MAP = {
+  arte:'#ede8f2', deporte:'#e6eef5', entretenimiento:'#f5ede8',
+  finanzas:'#e6ede4', gastronomia:'#f5ede0', naturaleza:'#e8f0e8',
+  retail:'#ede8f0', tecnologia:'#e4eaf5', viajes:'#e6f4f0'
+};
+
+const MISSION_COLOR_MAP = {
+  arte:'#A88ED8', deporte:'#C6CFE8', entretenimiento:'#F0D498',
+  finanzas:'#9D846B', gastronomia:'#F15F02', naturaleza:'#43E95A',
+  retail:'#BE4486', tecnologia:'#6638B8', viajes:'#72B3F5',
+};
+
+function missionBarTextColor(hex) {
+  if (!hex) return '#111';
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return (0.299*r + 0.587*g + 0.114*b) > 145 ? '#111111' : '#ffffff';
+}
+
+function CardCliente({card}) {
+  const levels = card.levels || [];
+  const mision = card.mision || '';
+  const misionLabel = mision.charAt(0).toUpperCase() + mision.slice(1);
+  const missionColor = MISSION_COLOR_MAP[mision] || '#9D846B';
+  const barTextColor = missionBarTextColor(missionColor);
+
+  const BAR_H   = 36;
+  const TOP_PAD = 10;
+  const BANNER_H = 42;
+  const LEVELS_TOP = TOP_PAD + BANNER_H + 8;  // 60
+  const LEVELS_W   = 218;
+  const LEVELS_BOT = BAR_H + 8;               // above color bar
+
+  return (
+    <div style={{position:'relative', width:'100%', height:'100%', overflow:'hidden', borderRadius:'inherit'}}>
+
+      {/* ── Background (gray placeholder → replaced by artwork) ── */}
+      <div style={{position:'absolute', inset:0, background:'#888'}}/>
+
+      {/* ── Name banner ── */}
+      <div style={{
+        position:'absolute', top:TOP_PAD, left:10, right:10, height:BANNER_H,
+        background:'white', borderRadius:8,
+        display:'flex', alignItems:'center', padding:'0 14px',
+        boxShadow:'0 2px 12px rgba(0,0,0,0.28)',
+      }}>
+        <span style={{
+          fontFamily:"'Instrument Sans', sans-serif",
+          fontWeight:700, fontSize:17, color:'#111',
+          overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+        }}>
+          {card.name.toUpperCase()}
+        </span>
+      </div>
+
+      {/* ── Level blocks ── */}
+      <div style={{
+        position:'absolute', top:LEVELS_TOP, left:10,
+        width:LEVELS_W, bottom:LEVELS_BOT,
+        display:'flex', flexDirection:'column', gap:6, justifyContent:'center',
+      }}>
+        {levels.map(l => (
+          <div key={l.level} style={{
+            background:'white', borderRadius:10,
+            boxShadow:'0 1px 6px rgba(0,0,0,0.18)',
+            display:'flex', alignItems:'center',
+            padding:'6px 10px 6px 0',
+            flex:1, minHeight:0, overflow:'hidden',
+          }}>
+
+            {/* Nivel label — vertical */}
+            <div style={{
+              width:26, flexShrink:0, alignSelf:'stretch',
+              display:'flex', alignItems:'center', justifyContent:'center',
+            }}>
+              <span style={{
+                fontFamily:"'Instrument Serif', serif",
+                fontSize:11, color:'#555',
+                writingMode:'vertical-lr',
+                transform:'rotate(180deg)',
+                whiteSpace:'nowrap',
+              }}>
+                Nivel {l.level}
+              </span>
+            </div>
+
+            {/* Resource icons */}
+            <div style={{
+              flex:1, display:'flex', alignItems:'center',
+              gap:3, flexWrap:'wrap', minWidth:0,
+            }}>
+              {(l.requirements||[]).flatMap((res,i) =>
+                Array.from({length:res.qty||1}).map((_,j) => (
+                  <ResourceIconSVG key={`${i}-${j}`} type={res.type} size={20}/>
+                ))
+              )}
+              {l.cultureRequirement && (
+                <span style={{
+                  fontFamily:"'Instrument Sans', sans-serif",
+                  fontSize:11, color:'#555', fontWeight:700,
+                }}>✦{l.cultureRequirement}</span>
+              )}
+            </div>
+
+            {/* Fee */}
+            <div style={{textAlign:'right', flexShrink:0}}>
+              <div style={{
+                fontFamily:"'Instrument Sans', sans-serif",
+                fontWeight:900, fontSize:28, color:'#1a7a1a', lineHeight:1,
+              }}>
+                {l.fee}<span style={{fontSize:13, fontWeight:700}}>K</span>
+              </div>
+              <div style={{
+                fontFamily:"'Instrument Sans', sans-serif",
+                fontSize:9, color:'#1a7a1a', fontWeight:600, lineHeight:1.3,
+              }}>por turno</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Flavor text (right side, above color bar) ── */}
+      {card.flavorText && (
+        <div style={{
+          position:'absolute', left:LEVELS_W + 18, right:12,
+          bottom:LEVELS_BOT + 4,
+          fontFamily:"'Instrument Serif', serif",
+          fontStyle:'italic', fontSize:11,
+          color:'rgba(255,255,255,0.88)',
+          textShadow:'0 1px 4px rgba(0,0,0,0.65)',
+          display:'flex', alignItems:'flex-end',
+        }}>
+          &ldquo;{card.flavorText}&rdquo;
+        </div>
+      )}
+
+      {/* ── Mission color bar ── */}
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0, height:BAR_H,
+        background:missionColor,
+        display:'flex', alignItems:'center', justifyContent:'flex-end',
+        padding:'0 14px',
+      }}>
+        <span style={{
+          fontFamily:"'Instrument Serif', serif",
+          fontStyle:'italic', fontSize:15, color:barTextColor,
+        }}>
+          {misionLabel}
+        </span>
+      </div>
+
+    </div>
+  );
+}
+
+// ── SHARED BASE: Inversión · Estrategia · Acción Urgente ─────────────────────
+function CardActionNew({ card, bgColor, costBg, costTextColor, costLabel,
+                         typeIcon, typeLabel, badgeBg, badgeTextColor, panelBg }) {
+  const cost = (card.recurringCost||0) > 0 ? card.recurringCost : (card.cost||0);
+  const BOTTOM_H = 122;
+
+  return (
+    <div style={{position:'relative', width:'100%', height:'100%', overflow:'hidden', borderRadius:'inherit'}}>
+
+      {/* ── Background (artwork placeholder) ── */}
+      <div style={{position:'absolute', inset:0, background:bgColor}}/>
+
+      {/* ── Black border frame ── */}
+      <div style={{
+        position:'absolute', inset:0, borderRadius:'inherit',
+        border:'3px solid #111', pointerEvents:'none', zIndex:10,
+      }}/>
+
+      {/* ── Name banner ── */}
+      <div style={{
+        position:'absolute', top:8, left:8, right:8, height:36,
+        background:'white', borderRadius:7,
+        display:'flex', alignItems:'center', padding:'0 11px',
+        boxShadow:'0 2px 10px rgba(0,0,0,0.2)',
+      }}>
+        <span style={{
+          fontFamily:"'Instrument Sans', sans-serif",
+          fontWeight:700, fontSize:13, color:'#111',
+          overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+        }}>
+          {card.name}
+        </span>
+      </div>
+
+      {/* ── Cost block ── */}
+      <div style={{
+        position:'absolute', top:52, left:8,
+        width:70, height:72,
+        background:costBg, borderRadius:10,
+        display:'flex', flexDirection:'column',
+        alignItems:'center', justifyContent:'center', gap:1,
+        boxShadow:'0 2px 8px rgba(0,0,0,0.18)',
+      }}>
+        <div style={{
+          fontFamily:"'Instrument Sans', sans-serif",
+          fontWeight:900, fontSize:26, color:costTextColor, lineHeight:1,
+        }}>
+          {cost}<span style={{fontSize:12, fontWeight:700}}>K</span>
+        </div>
+        <div style={{
+          fontFamily:"'Instrument Sans', sans-serif",
+          fontSize:8, color:costTextColor, fontWeight:600,
+          opacity: costTextColor === '#111' ? 0.65 : 0.9,
+        }}>{costLabel}</div>
+        {card.cultureRequirement && (
+          <div style={{
+            fontFamily:"'Instrument Sans', sans-serif",
+            fontSize:8, color:costTextColor, fontWeight:600,
+            opacity:0.65, marginTop:1,
+          }}>✦ {card.cultureRequirement}</div>
+        )}
+      </div>
+
+      {/* ── Bottom panel ── */}
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0, height:BOTTOM_H,
+        background: panelBg !== undefined ? panelBg : 'rgba(244,242,238,0.97)',
+        display:'flex', flexDirection:'column',
+        padding:'8px', gap:6,
+      }}>
+
+        {/* Type badge */}
+        <div style={{
+          background:badgeBg, borderRadius:7,
+          display:'flex', alignItems:'center',
+          gap:7, padding:'5px 10px', flexShrink:0,
+          border: badgeBg === 'white' ? '1px solid rgba(0,0,0,0.1)' : 'none',
+        }}>
+          {typeIcon && (
+            <div style={{
+              width:22, height:22, borderRadius:5, flexShrink:0,
+              background:'rgba(255,255,255,0.18)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+            }}>
+              {typeIcon}
+            </div>
+          )}
+          <span style={{
+            fontFamily:"'Instrument Sans', sans-serif",
+            fontWeight:700, fontSize:12, color:badgeTextColor,
+          }}>{typeLabel}</span>
+        </div>
+
+        {/* Effects + Flavor text */}
+        <div style={{
+          flex:1, background:'white', borderRadius:7,
+          border:'1px solid rgba(0,0,0,0.08)',
+          padding:'7px 9px',
+          display:'flex', flexDirection:'column', justifyContent:'space-between',
+          overflow:'hidden',
+        }}>
+          {card.effects && card.effects.length > 0 && (
+            <div style={{
+              fontFamily:"'Instrument Sans', sans-serif",
+              fontSize:9.5, color:'#1a1a1a', lineHeight:1.45,
+              display:'-webkit-box', WebkitLineClamp:4, WebkitBoxOrient:'vertical', overflow:'hidden',
+            }}>
+              {card.effects[0].description}
+            </div>
+          )}
+          {card.flavorText && (
+            <div style={{
+              fontFamily:"'Instrument Serif', serif",
+              fontStyle:'italic', fontSize:8.5, color:'#888', lineHeight:1.4,
+              marginTop:'auto', paddingTop:3,
+              display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden',
+            }}>
+              &ldquo;{card.flavorText}&rdquo;
+            </div>
+          )}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+// ── INVERSIÓN ────────────────────────────────────────────────────────────────
+function CardInversion({card}) {
+  const hasRecurring = (card.recurringCost||0) > 0;
+  return (
+    <CardActionNew
+      card={card}
+      bgColor="#2D2D2D"
+      costBg={hasRecurring ? '#D94242' : 'white'}
+      costTextColor={hasRecurring ? 'white' : '#111'}
+      costLabel={hasRecurring ? 'por turno' : 'una vez'}
+      typeIcon={null}
+      typeLabel="Inversión"
+      badgeBg="white"
+      badgeTextColor="#111"
+      panelBg="transparent"
+    />
+  );
+}
+
+// ── ESTRATEGIA ───────────────────────────────────────────────────────────────
+function CardEstrategia({card}) {
+  const icon = (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+      <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+      <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+      <rect x="3" y="13" width="8" height="8" rx="1.5"/>
+      <rect x="13" y="13" width="8" height="8" rx="1.5"/>
+    </svg>
+  );
+  return (
+    <CardActionNew
+      card={card}
+      bgColor="#A8C4CC"
+      costBg="white"
+      costTextColor="#111"
+      costLabel="una vez"
+      typeIcon={icon}
+      typeLabel="Estrategia"
+      badgeBg="#0D1B2E"
+      badgeTextColor="white"
+    />
+  );
+}
+
+// ── ACCIÓN URGENTE ───────────────────────────────────────────────────────────
+function CardUrgente({card}) {
+  const icon = (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+      <path d="M8 5v14l11-7z"/>
+    </svg>
+  );
+  return (
+    <CardActionNew
+      card={card}
+      bgColor="#D96060"
+      costBg="white"
+      costTextColor="#111"
+      costLabel="una vez"
+      typeIcon={icon}
+      typeLabel="Acción Urgente"
+      badgeBg="#C43C3C"
+      badgeTextColor="white"
+    />
+  );
+}
+
+// ── CARD ITEM WRAPPER ────────────────────────────────────────────────────────
+function CardItem({card,onClick}) {
+  const t = card.type;
+  const typeCls = TYPE_CONFIG[t] ? `card-${TYPE_CONFIG[t].cls}` : '';
+  const isLandscape = t === 'cliente';
+  const misionBgCls = isLandscape && card.mision ? `mission-bg-${card.mision}` : '';
+  const sizeCls = isLandscape ? 'card-landscape' : 'card-portrait';
+  const cls = ['card-item', typeCls, sizeCls, misionBgCls].filter(Boolean).join(' ');
+  return (
+    <div className={cls} onClick={()=>onClick(card)}>
+      {t==='talento'&&<CardTalento card={card}/>}
+      {t==='cliente'&&<CardCliente card={card}/>}
+      {t==='inversion'&&<CardInversion card={card}/>}
+      {t==='estrategia'&&<CardEstrategia card={card}/>}
+      {t==='accion_urgente'&&<CardUrgente card={card}/>}
+    </div>
+  );
+}
+
+
+// ─── GAME UTILITIES ───────────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+let _uid = 0;
+function mkUid(c) {
+  const base = { ...c, _uid: `${c.id}-${++_uid}` };
+  if (c.type === 'cliente') return { ...base, currentLevel: 1 };
+  return base;
+}
+
+// ── Active card set (can be swapped at runtime) ──
+let _activeCardsData = CARDS_DATA;
+function getCardsData() { return _activeCardsData; }
+
+function buildMain() {
+  const d = getCardsData();
+  return shuffle([
+    ...(d.talents||[]).map(mkUid),
+    ...(d.investments||[]).map(mkUid),
+    ...(d.strategies||[]).map(mkUid),
+    ...(d.urgent_actions||[]).map(mkUid),
+  ]);
+}
+function buildClients() { return shuffle((getCardsData().clients||[]).map(mkUid)); }
+
+function createInitialState(ms = 4) {
+  const main    = buildMain();
+  const clients = buildClients();
+  const HAND = 4;
+  return {
+    marketSize:   ms,
+    turn: 0, money: 4, cultura: 2,
+    resources: { creativo:0, desarrollo:0, analista:0, manager:0 },
+    mainDeck:     main.slice(HAND + ms),
+    clientDeck:   clients.slice(ms),
+    hand:         main.slice(0, HAND),
+    mesa:         [],
+    discard:      [],
+    mainMarket:   main.slice(HAND, HAND + ms),
+    clientMarket: clients.slice(0, ms),
+    ctx:   null,
+    detail:null,
+    log: ['🎮 Juego iniciado — Turno 0'],
+  };
+}
+
+// ─── REDUCER HELPERS ─────────────────────────────────────────────────────────
+function addLog(msg, s) { return { ...s, log: [msg, ...s.log].slice(0, 30) }; }
+
+function removeFrom(s, zone, uid) {
+  if (zone === 'hand')         return { ...s, hand:         s.hand.filter(c => c._uid !== uid) };
+  if (zone === 'mesa')         return { ...s, mesa:         s.mesa.filter(c => c._uid !== uid) };
+  if (zone === 'mainMarket')   return { ...s, mainMarket:   s.mainMarket.filter(c => c._uid !== uid) };
+  if (zone === 'clientMarket') return { ...s, clientMarket: s.clientMarket.filter(c => c._uid !== uid) };
+  if (zone === 'discard')      return { ...s, discard:      s.discard.filter(c => c._uid !== uid) };
+  if (zone === 'mainDeck')     return { ...s, mainDeck:     s.mainDeck.filter(c => c._uid !== uid) };
+  if (zone === 'clientDeck')   return { ...s, clientDeck:   s.clientDeck.filter(c => c._uid !== uid) };
+  if (zone.startsWith('assigned-')) {
+    const cUid = zone.slice(9);
+    return { ...s, mesa: s.mesa.map(c => c._uid === cUid ? { ...c, assignedTalents: (c.assignedTalents||[]).filter(t => t._uid !== uid) } : c) };
+  }
+  return s;
+}
+
+function addTo(s, zone, card) {
+  if (zone === 'hand')         return { ...s, hand:         [...s.hand, card] };
+  if (zone === 'mesa') {
+    const base = (card.type === 'cliente' && !card.assignedTalents) ? { ...card, assignedTalents: [] } : card;
+    // Ensure position defaults (will be overwritten by MOVE's x,y if provided)
+    const toAdd = { _x: 20, _y: 20, ...base };
+    return { ...s, mesa: [...s.mesa, toAdd] };
+  }
+  if (zone === 'mainMarket')   return { ...s, mainMarket:   [...s.mainMarket, card] };
+  if (zone === 'clientMarket') return { ...s, clientMarket: [...s.clientMarket, card] };
+  if (zone === 'discard')      return { ...s, discard:      [card, ...s.discard] };
+  if (zone === 'mainDeck')     return { ...s, mainDeck:     [card, ...s.mainDeck] };
+  if (zone === 'clientDeck')   return { ...s, clientDeck:   [card, ...s.clientDeck] };
+  if (zone.startsWith('assigned-')) {
+    const cUid = zone.slice(9);
+    return { ...s, mesa: s.mesa.map(c => c._uid === cUid ? { ...c, assignedTalents: [...(c.assignedTalents||[]), card] } : c) };
+  }
+  return s;
+}
+
+// Refills only the main market up to marketSize (called at start of each turn).
+// Client market is never auto-refilled — it starts with 4 and stays at whatever count.
+function refillMarkets(s) {
+  let ns = { ...s };
+  while (ns.mainMarket.length < ns.marketSize && ns.mainDeck.length > 0) {
+    const [r, ...rd] = ns.mainDeck;
+    ns = { ...ns, mainMarket: [...ns.mainMarket, r], mainDeck: rd };
+  }
+  return ns;
+}
+
+// ─── REDUCER ─────────────────────────────────────────────────────────────────
+function reducer(state, action) {
+  switch (action.type) {
+    case 'DRAW_MAIN': {
+      if (!state.mainDeck.length) return addLog('🚫 Mazo principal vacío', state);
+      const [top, ...rest] = state.mainDeck;
+      return addLog(`⬆️ Robaste: ${top.name}`, { ...state, mainDeck: rest, hand: [...state.hand, top] });
+    }
+    case 'DRAW_CLIENT': {
+      if (!state.clientDeck.length) return addLog('🚫 Mazo de clientes vacío', state);
+      const [top, ...rest] = state.clientDeck;
+      return addLog(`⬆️ Cliente: ${top.name}`, { ...state, clientDeck: rest, hand: [...state.hand, top] });
+    }
+    case 'POSITION_CARD': {
+      // Move a card freely within the mesa and bring it to front (last in array = top z-index)
+      const { uid, x, y } = action;
+      const card = state.mesa.find(c => c._uid === uid);
+      if (!card) return state;
+      const rest = state.mesa.filter(c => c._uid !== uid);
+      return { ...state, mesa: [...rest, { ...card, _x: x, _y: y }] };
+    }
+    case 'MOVE': {
+      const { card, fromZone, x, y } = action;
+      // ── Auto-redirect: enforce client / non-client zone rules ──
+      const isClient = card.type === 'cliente';
+      let toZone = action.toZone;
+      if (isClient  && toZone === 'mainMarket') toZone = 'clientMarket';
+      if (isClient  && toZone === 'mainDeck')   toZone = 'clientDeck';
+      if (!isClient && toZone === 'clientMarket') toZone = 'mainMarket';
+      if (!isClient && toZone === 'clientDeck')   toZone = 'mainDeck';
+      if (fromZone === toZone) return state;
+      // Guard: clients can never be placed in an assigned-talent slot
+      if (isClient && toZone.startsWith('assigned-')) return state;
+      const zLabel = z => {
+        if (z.startsWith('assigned-')) return 'Asignado a cliente';
+        return { hand:'Mano', mesa:'Mesa', mainDeck:'Mazo Principal', clientDeck:'Mazo Clientes', discard:'Descarte', mainMarket:'Mercado Principal', clientMarket:'Mercado Clientes' }[z] || z;
+      };
+      let s = state;
+      let culturaDelta = 0;
+      const isTalent = card.type === 'talento';
+
+      // ── Cultura tracking ──────────────────────────────────────────────────────
+      // Each talent has a net cultura effect depending on its zone:
+      //   hand/discard/deck/market → 0
+      //   mesa (unassigned)        → -1
+      //   assigned with mission match → +1
+      //   assigned without match   → 0
+      // Delta = newEffect - oldEffect
+      if (isTalent) {
+        const zoneEffect = (zone) => {
+          if (zone === 'mesa') return -1;
+          if (zone.startsWith('assigned-')) {
+            // Talent always pays the -1 play cost while in any play zone.
+            // Mission match gives +1 that offsets it → net 0; no match → net -1.
+            const cUid = zone.slice(9);
+            const client = s.mesa.find(c => c._uid === cUid);
+            const matchBonus = (client && card.mision && client.mision && card.mision === client.mision) ? 1 : 0;
+            return -1 + matchBonus;
+          }
+          return 0; // hand, discard, market, deck — not in play
+        };
+        culturaDelta = zoneEffect(toZone) - zoneEffect(fromZone);
+      }
+
+      // If removing a client from the mesa that has assigned talents → release them back to mesa
+      if (fromZone === 'mesa' && card.type === 'cliente') {
+        const mCard = s.mesa.find(c => c._uid === card._uid);
+        if (mCard?.assignedTalents?.length) {
+          // Each assigned talent returns to the mesa:
+          // - it re-enters mesa so pays -1 for the mesa cost
+          // - it loses its mission bonus if it had one (−1)
+          // Net: -1 (mesa cost stays) + possibly -1 (lost mission bonus)
+          mCard.assignedTalents.forEach(t => {
+            if (t.type === 'talento') {
+              // talent was in assigned slot (conceptually on mesa), now explicitly on mesa:
+              // the mesa cost was already being paid implicitly; but mission bonus is lost
+              if (t.mision && mCard.mision && t.mision === mCard.mision) {
+                culturaDelta -= 1; // lose mission alignment bonus
+              }
+            }
+          });
+          s = { ...s, mesa: s.mesa.filter(c => c._uid !== card._uid) };      // remove client
+          s = { ...s, mesa: [...s.mesa, ...mCard.assignedTalents] };          // release talents
+          s = addTo(s, toZone, card);
+          s = { ...s, cultura: (s.cultura || 0) + culturaDelta };
+          return addLog(`↔️ ${card.name} → ${zLabel(toZone)}`, s);
+        }
+      }
+
+      s = removeFrom(s, fromZone, card._uid);
+      const cardWithPos = (toZone === 'mesa' && x !== undefined) ? { ...card, _x: x, _y: y } : card;
+      s = addTo(s, toZone, cardWithPos);
+      s = { ...s, cultura: (s.cultura || 0) + culturaDelta };
+      return addLog(`↔️ ${card.name} → ${zLabel(toZone)}`, s);
+    }
+    case 'ADJUST': {
+      if (action.res) {
+        const v = Math.max(0, (state.resources[action.res] || 0) + action.d);
+        return { ...state, resources: { ...state.resources, [action.res]: v } };
+      }
+      const newVal = (state[action.k] || 0) + action.d;
+      // Cultura can go negative; all other stats are floored at 0
+      const clamped = action.k === 'cultura' ? newVal : Math.max(0, newVal);
+      return { ...state, [action.k]: clamped };
+    }
+    case 'SET_MKT_SIZE': {
+      const ms = Math.max(1, Math.min(8, action.v));
+      return { ...state, marketSize: ms };
+    }
+    case 'END_TURN': {
+      const t = state.turn + 1;
+      const MAX_HAND = 4;
+      let s = state;
+
+      // ── Helpers ─────────────────────────────────────────────────────────────
+      // Sum resources produced by an array of talent cards
+      const sumResources = (talents) => {
+        const pool = {};
+        (talents || []).forEach(tk => {
+          (tk.resources || []).forEach(r => {
+            pool[r.type] = (pool[r.type] || 0) + (r.qty || 1);
+          });
+        });
+        return pool;
+      };
+      // Check if a resource pool satisfies a requirements array.
+      // Hybrid resources act as wildcards for any type except 'manager'.
+      const satisfies = (pool, reqs) => {
+        if (!reqs || reqs.length === 0) return true;
+        let hybridLeft = pool['hibrido'] || 0;
+        return reqs.every(req => {
+          const have = pool[req.type] || 0;
+          const need = req.qty || 1;
+          if (have >= need) return true;
+          // Manager cannot be substituted by hybrid resources
+          if (req.type === 'manager') return false;
+          // Fill the shortfall with hybrid resources
+          const gap = need - have;
+          if (hybridLeft >= gap) { hybridLeft -= gap; return true; }
+          return false;
+        });
+      };
+      // Get the level definition object for a given level number
+      const getLvl = (client, lvl) =>
+        (client.levels || []).find(l => l.level === lvl) || null;
+
+      // ── 0. Discard down to max hand size ────────────────────────────────────
+      let discardNote = '';
+      if (s.hand.length > MAX_HAND) {
+        const n = s.hand.length - MAX_HAND;
+        const discarded = s.hand.slice(MAX_HAND);
+        s = { ...s, hand: s.hand.slice(0, MAX_HAND), discard: [...discarded, ...s.discard] };
+        discardNote = ` · 🗑️ descarte ${n}`;
+      }
+
+      // ── 1. Level-up: clients that have resources for their next level ────────
+      const levelUps = [];
+      s = {
+        ...s,
+        mesa: s.mesa.map(card => {
+          if (card.type !== 'cliente') return card;
+          const cur = card.currentLevel || 1;
+          const maxLvl = (card.levels || []).length;
+          if (cur >= maxLvl) return card; // already at max
+          const nextDef = getLvl(card, cur + 1);
+          if (!nextDef) return card;
+          const pool = sumResources(card.assignedTalents);
+          if (satisfies(pool, nextDef.requirements)) {
+            levelUps.push(card.name);
+            return { ...card, currentLevel: cur + 1 };
+          }
+          return card;
+        }),
+      };
+      if (levelUps.length) s = addLog(`⬆️ Subida de nivel: ${levelUps.join(', ')}`, s);
+
+      // ── 2. Collect fees from clients with enough resources ───────────────────
+      let totalFee = 0;
+      const feeDetails = [];
+      s.mesa.forEach(card => {
+        if (card.type !== 'cliente') return;
+        const cur = card.currentLevel || 1;
+        const curDef = getLvl(card, cur);
+        if (!curDef) return;
+        const pool = sumResources(card.assignedTalents);
+        if (satisfies(pool, curDef.requirements)) {
+          const fee = curDef.fee || 0;
+          if (fee > 0) { totalFee += fee; feeDetails.push(`${card.name} +${fee}K`); }
+        }
+      });
+      if (totalFee > 0) {
+        s = { ...s, money: (s.money || 0) + totalFee };
+        s = addLog(`💰 Fees cobrados: +${totalFee}K (${feeDetails.join(', ')})`, s);
+      }
+
+      // ── 3. Pay recurring/maintenance costs for all cards in play ─────────────
+      let totalCost = 0;
+      const costDetails = [];
+      const deductCost = (card) => {
+        const rc = (card.recurringCost || 0) > 0 ? card.recurringCost
+                 : (card.maintenanceCost || 0) > 0 ? card.maintenanceCost : 0;
+        if (rc > 0) { totalCost += rc; costDetails.push(`${card.name} -${rc}K`); }
+      };
+      // Walk every position in the play area:
+      // clients → iterate every assigned talent; non-clients → deduct directly
+      s.mesa.forEach(card => {
+        if (card.type === 'cliente') {
+          (card.assignedTalents || []).forEach(t => deductCost(t));
+        } else {
+          deductCost(card);
+        }
+      });
+      if (totalCost > 0) {
+        s = { ...s, money: (s.money || 0) - totalCost };
+        s = addLog(`💸 Costos por turno: -${totalCost}K (${costDetails.join(', ')})`, s);
+      }
+
+      // ── 4. Evict clients without enough resources for their current level ─────
+      // Identify them first (before mutating mesa)
+      const toEvict = s.mesa.filter(card => {
+        if (card.type !== 'cliente') return false;
+        const cur = card.currentLevel || 1;
+        const curDef = getLvl(card, cur);
+        if (!curDef) return false;
+        const pool = sumResources(card.assignedTalents);
+        return !satisfies(pool, curDef.requirements);
+      });
+      let culturaDelta = 0;
+      toEvict.forEach(client => {
+        const talents = client.assignedTalents || [];
+        // Each released talent goes to the mesa → pays -1 cultura mesa cost
+        // If it had a mission-match bonus with this client, that's also lost
+        talents.forEach(tk => {
+          if (tk.type === 'talento') {
+            // Assigned (no match) → mesa: both are -1, delta = 0.
+            // Assigned (match) → mesa: was 0 (−1 cost + 1 bonus), now −1, delta = −1.
+            const hadMatch = tk.mision && client.mision && tk.mision === client.mision;
+            if (hadMatch) culturaDelta -= 1;
+          }
+        });
+        // Remove client from mesa, release talents onto mesa, send client to clientMarket
+        s = { ...s, mesa: s.mesa.filter(c => c._uid !== client._uid) };
+        s = { ...s, mesa: [...s.mesa, ...talents] };
+        s = { ...s, clientMarket: [client, ...s.clientMarket] };
+        s = addLog(`⚠️ ${client.name} sin recursos → Mercado de clientes`, s);
+      });
+      if (culturaDelta !== 0) {
+        s = { ...s, cultura: (s.cultura || 0) + culturaDelta };
+      }
+
+      // ── 5. Draw one card from main deck ─────────────────────────────────────
+      if (s.mainDeck.length > 0) {
+        const [drawn, ...restDeck] = s.mainDeck;
+        s = { ...s, mainDeck: restDeck, hand: [...s.hand, drawn] };
+        s = addLog(`🃏 Robaste: ${drawn.name}`, s);
+      } else {
+        s = addLog('⚠️ Mazo principal vacío — no se robó carta', s);
+      }
+
+      // ── 6. Place top client from deck directly onto mesa ────────────────────
+      if (s.clientDeck.length > 0) {
+        const [newClient, ...restClients] = s.clientDeck;
+        // Position the new client to avoid stacking exactly at (20,20)
+        const clientsOnMesa = s.mesa.filter(c => c.type === 'cliente').length;
+        const nx = 20 + clientsOnMesa * 30;
+        const ny = 20 + clientsOnMesa * 20;
+        const placed = { ...newClient, _x: nx, _y: ny, assignedTalents: newClient.assignedTalents || [] };
+        s = { ...s, clientDeck: restClients, mesa: [...s.mesa, placed] };
+        s = addLog(`👥 Nuevo cliente en mesa: ${newClient.name}`, s);
+      } else {
+        s = addLog('⚠️ Mazo de clientes vacío — no llegó cliente nuevo', s);
+      }
+
+      // ── 7. Refill main market ────────────────────────────────────────────────
+      s = refillMarkets(s);
+      s = { ...s, turn: t };
+      s = addLog(`⏭️ ─── Turno ${t}${discardNote} ───`, s);
+      return s;
+    }
+    case 'REORDER': {
+      const { zone, cardUid, refUid, after } = action;
+      const reorder = (arr) => {
+        const card = arr.find(c => c._uid === cardUid);
+        if (!card) return arr;
+        const rest = arr.filter(c => c._uid !== cardUid);
+        const refIdx = rest.findIndex(c => c._uid === refUid);
+        if (refIdx === -1) return [...rest, card]; // append if ref not found
+        const at = after ? refIdx + 1 : refIdx;
+        return [...rest.slice(0, at), card, ...rest.slice(at)];
+      };
+      const simpleZones = ['hand','mesa','mainMarket','clientMarket','discard'];
+      if (simpleZones.includes(zone)) return { ...state, [zone]: reorder(state[zone]) };
+      if (zone.startsWith('assigned-')) {
+        const cUid = zone.slice(9);
+        return { ...state, mesa: state.mesa.map(c => c._uid === cUid ? { ...c, assignedTalents: reorder(c.assignedTalents||[]) } : c) };
+      }
+      return state;
+    }
+    case 'SET_LEVEL': {
+      const upd = arr => arr.map(c => c._uid === action.uid ? { ...c, currentLevel: action.level } : c);
+      return {
+        ...state,
+        hand:         upd(state.hand),
+        mesa:         upd(state.mesa),
+        mainMarket:   upd(state.mainMarket),
+        clientMarket: upd(state.clientMarket),
+        discard:      upd(state.discard),
+        mainDeck:     upd(state.mainDeck),
+        clientDeck:   upd(state.clientDeck),
+      };
+    }
+    case 'SHUFFLE_MAIN':   return addLog('🔀 Mazo principal mezclado',  { ...state, mainDeck:   shuffle(state.mainDeck) });
+    case 'SHUFFLE_CLIENT': return addLog('🔀 Mazo clientes mezclado',   { ...state, clientDeck: shuffle(state.clientDeck) });
+    case 'CTX':    return { ...state, ctx: action.v, detail: null };
+    case 'DETAIL': return { ...state, detail: action.card, ctx: null };
+    case 'RESET':  _uid = 0; return createInitialState(state.marketSize);
+    default: return state;
+  }
+}
+
+// ─── SCALED CARD ─────────────────────────────────────────────────────────────
+function ScaledCard({ card, scale, onClick, fromZone, onDragStart, onHover, onHoverEnd, dispatch, onDragEnterCard }) {
+  const isL = card.type === 'cliente';
+  const NW = isL ? 390 : 220, NH = isL ? 272 : 308;
+  const W = Math.round(NW * scale), H = Math.round(NH * scale);
+  const t  = card.type;
+  const TC = TYPE_CONFIG[t] || {};
+  const cls = [
+    'card-item',
+    TC.cls ? `card-${TC.cls}` : '',
+    isL ? 'card-landscape' : 'card-portrait',
+    (isL && card.mision) ? `mission-bg-${card.mision}` : '',
+  ].filter(Boolean).join(' ');
+
+  return (
+    <div
+      className="card-scaled"
+      style={{ width: W, height: H }}
+      draggable={true}
+      onDragStart={e => { onDragStart && onDragStart(card, fromZone || 'unknown', e); }}
+      onDragEnter={e => { onDragEnterCard && onDragEnterCard(card._uid, fromZone, e); }}
+      onClick={onClick}
+      onMouseEnter={e => onHover && onHover(card, e.clientX, e.clientY)}
+      onMouseLeave={() => onHoverEnd && onHoverEnd()}
+    >
+      <div className="card-scaled-inner" style={{ width: NW, height: NH, transform: `scale(${scale})` }}>
+        <div className={cls} style={{ width: NW, height: NH }}>
+          {t === 'talento'        && <CardTalento card={card} />}
+          {t === 'cliente'        && <CardCliente card={card} />}
+          {t === 'inversion'      && <CardInversion card={card} />}
+          {t === 'estrategia'     && <CardEstrategia card={card} />}
+          {t === 'accion_urgente' && <CardUrgente card={card} />}
+        </div>
+      </div>
+      {/* Level badge — only for multi-level client cards when dispatch is available */}
+      {t === 'cliente' && dispatch && (card.levels?.length || 0) > 1 && (() => {
+        const maxLevel = card.levels.length;
+        const cur = card.currentLevel || 1;
+        const next = (cur % maxLevel) + 1;
+        const sz = Math.max(18, Math.round(26 * scale));
+        return (
+          <div
+            onClick={e => { e.stopPropagation(); dispatch({ type:'SET_LEVEL', uid:card._uid, level:next }); }}
+            title={`Nivel ${cur} de ${maxLevel} — click para avanzar`}
+            style={{
+              position:'absolute', top:4, right:4, zIndex:10,
+              width:sz, height:sz, borderRadius:'50%',
+              background:'rgba(10,10,20,0.82)', color:'#f8fafc',
+              border:'1.5px solid rgba(255,255,255,0.35)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              fontSize: Math.max(10, Math.round(13 * scale)), fontWeight:900,
+              cursor:'pointer', userSelect:'none',
+              boxShadow:'0 2px 8px rgba(0,0,0,0.5)',
+            }}
+          >{cur}</div>
+        );
+      })()}
+    </div>
+  );
+}
+
+// ─── HOVER PREVIEW ───────────────────────────────────────────────────────────
+function HoverPreview({ hoverCard }) {
+  if (!hoverCard) return null;
+  const { card, x, y } = hoverCard;
+  const isL = card.type === 'cliente';
+  const SCALE = isL ? 0.85 : 1.05;
+  const NW = isL ? 390 : 220, NH = isL ? 272 : 308;
+  const W = Math.round(NW * SCALE), H = Math.round(NH * SCALE);
+
+  let px = x + 18;
+  let py = y - Math.round(H / 2);
+  if (px + W > window.innerWidth  - 8) px = x - W - 18;
+  if (py < 8) py = 8;
+  if (py + H > window.innerHeight - 8) py = window.innerHeight - H - 8;
+
+  return (
+    <div style={{
+      position:'fixed', left:px, top:py, zIndex:150,
+      pointerEvents:'none',
+      filter:'drop-shadow(0 10px 30px rgba(0,0,0,0.7))',
+      transition:'opacity .1s',
+    }}>
+      <ScaledCard card={card} scale={SCALE} onClick={() => {}} fromZone="preview"/>
+    </div>
+  );
+}
+
+// ─── DROP ZONE WRAPPER ───────────────────────────────────────────────────────
+function DropZone({ zone, dropZone, handlers, style, className, children }) {
+  const { over, leave, drop } = handlers;
+  const isActive = dropZone === zone;
+  const activeClass = zone === 'discard' ? 'drop-active-red' : zone === 'mainDeck' || zone === 'clientDeck' ? 'drop-active-green' : 'drop-active';
+  return (
+    <div
+      onDragOver={e => over(zone, e)}
+      onDragLeave={e => leave(zone, e)}
+      onDrop={e => drop(zone, e)}
+      style={style}
+      className={`${className || ''} ${isActive ? activeClass : ''}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── STAT + RESOURCE TILES ───────────────────────────────────────────────────
+function StatTile({ label, value, color, icon, onP, onM }) {
+  return (
+    <div className="stat-tile">
+      <div className="stat-label">{icon} {label}</div>
+      <div className="stat-value" style={{ color }}>{value}</div>
+      <div className="stat-controls">
+        <button className="stat-btn" onClick={onM}>−</button>
+        <button className="stat-btn" onClick={onP}>+</button>
+      </div>
+    </div>
+  );
+}
+
+function ResTile({ type, val, dispatch }) {
+  const C = { creativo:'#DE6834', desarrollo:'#73C76C', analista:'#3A77E3', manager:'#4060a0' };
+  const L = { creativo:'Crea', desarrollo:'Dev', analista:'Anal', manager:'Mgr' };
+  return (
+    <div className="stat-tile" style={{ minWidth:54, padding:'3px 6px' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:3 }}>
+        <ResourceIconSVG type={type} size={13}/>
+        <span className="stat-label">{L[type]}</span>
+      </div>
+      <div className="stat-value" style={{ color:C[type], fontSize:16 }}>{val}</div>
+      <div className="stat-controls">
+        <button className="stat-btn" onClick={() => dispatch({ type:'ADJUST', res:type, d:-1 })}>−</button>
+        <button className="stat-btn" onClick={() => dispatch({ type:'ADJUST', res:type, d:1 })}>+</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── DECK PILE ───────────────────────────────────────────────────────────────
+function DeckPile({ label, icon, count, color, onDraw, onShuffle, zone, dropZone, handlers }) {
+  const { over, leave, drop } = handlers;
+  const isActive = dropZone === zone;
+  return (
+    <div
+      className={`deck-pile${isActive ? ' drop-active-green' : ''}`}
+      style={{ transition:'outline .1s, background .1s' }}
+      onClick={onDraw}
+      onDragOver={e => over(zone, e)}
+      onDragLeave={e => leave(zone, e)}
+      onDrop={e => drop(zone, e)}
+      title={`Click: robar | Arrastrar aquí: poner arriba del mazo`}
+    >
+      <div style={{ fontSize:19 }}>{icon}</div>
+      <div className="deck-pile-label">{label}</div>
+      <div className="deck-pile-count" style={{ color }}>{count}</div>
+      <button className="deck-pill-btn" onClick={e => { e.stopPropagation(); onShuffle(); }}>🔀</button>
+    </div>
+  );
+}
+
+// ─── DISCARD PILE ────────────────────────────────────────────────────────────
+function DiscardPile({ top, count, dispatch, zone, dropZone, handlers, startDrag }) {
+  const { over, leave, drop } = handlers;
+  const isActive = dropZone === zone;
+  return (
+    <div
+      className={`deck-pile${isActive ? ' drop-active-red' : ''}`}
+      style={{ opacity: count ? 1 : 0.45, transition:'outline .1s, background .1s' }}
+      onClick={() => top && dispatch({ type:'CTX', v:{ card:top, zone:'discard', x:70, y:300 } })}
+      onDragOver={e => over(zone, e)}
+      onDragLeave={e => leave(zone, e)}
+      onDrop={e => drop(zone, e)}
+      title="Arrastrá cartas aquí para descartar"
+    >
+      <div style={{ fontSize:19 }}>🗑️</div>
+      <div className="deck-pile-label">Descarte</div>
+      <div className="deck-pile-count" style={{ color:'#cc7070' }}>{count}</div>
+      {top && (
+        <div
+          draggable={true}
+          onDragStart={e => { e.stopPropagation(); startDrag(top, 'discard', e); }}
+          style={{ fontSize:8, color:'#64748b', textAlign:'center', maxWidth:108, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', cursor:'grab' }}
+        >{top.name}</div>
+      )}
+    </div>
+  );
+}
+
+// ─── CONTEXT MENU ────────────────────────────────────────────────────────────
+function CtxMenu({ ctx, dispatch }) {
+  if (!ctx) return null;
+  const { card, zone, x, y } = ctx;
+  const TC = TYPE_CONFIG[card.type] || {};
+  const hide = () => dispatch({ type:'CTX', v:null });
+  const acts = [];
+
+  if (zone === 'hand') {
+    acts.push({ icon:'🃏', label:'Jugar a mesa',      fn:() => { dispatch({ type:'MOVE', card, fromZone:'hand', toZone:'mesa'    }); hide(); } });
+    acts.push({ icon:'🗑️', label:'Descartar',          fn:() => { dispatch({ type:'MOVE', card, fromZone:'hand', toZone:'discard' }); hide(); }, danger:true });
+    acts.push({ icon:'🔝', label:'Poner en mazo',      fn:() => {
+      const tz = card.type === 'cliente' ? 'clientDeck' : 'mainDeck';
+      dispatch({ type:'MOVE', card, fromZone:'hand', toZone:tz }); hide();
+    } });
+  }
+  if (zone === 'mesa') {
+    acts.push({ icon:'✋', label:'Volver a mano',      fn:() => { dispatch({ type:'MOVE', card, fromZone:'mesa', toZone:'hand'    }); hide(); } });
+    acts.push({ icon:'🗑️', label:'Descartar',          fn:() => { dispatch({ type:'MOVE', card, fromZone:'mesa', toZone:'discard' }); hide(); }, danger:true });
+  }
+  if (zone.startsWith('assigned-')) {
+    acts.push({ icon:'🃏', label:'Desasignar a mesa',  fn:() => { dispatch({ type:'MOVE', card, fromZone:zone, toZone:'mesa'    }); hide(); } });
+    acts.push({ icon:'✋', label:'Volver a mano',       fn:() => { dispatch({ type:'MOVE', card, fromZone:zone, toZone:'hand'    }); hide(); } });
+    acts.push({ icon:'🗑️', label:'Descartar',           fn:() => { dispatch({ type:'MOVE', card, fromZone:zone, toZone:'discard' }); hide(); }, danger:true });
+  }
+  if (zone === 'mainMarket' || zone === 'clientMarket') {
+    acts.push({ icon:'✅', label:'Adquirir a mano',    fn:() => { dispatch({ type:'MOVE', card, fromZone:zone,   toZone:'hand'    }); hide(); } });
+    acts.push({ icon:'🗑️', label:'Descartar del mercado', fn:() => { dispatch({ type:'MOVE', card, fromZone:zone, toZone:'discard'}); hide(); }, danger:true });
+  }
+  if (zone === 'discard') {
+    acts.push({ icon:'✋', label:'Volver a mano',      fn:() => { dispatch({ type:'MOVE', card, fromZone:'discard', toZone:'hand' }); hide(); } });
+    acts.push({ icon:'🔝', label:'Devolver al mazo',   fn:() => {
+      const tz = card.type === 'cliente' ? 'clientDeck' : 'mainDeck';
+      dispatch({ type:'MOVE', card, fromZone:'discard', toZone:tz }); hide();
+    } });
+  }
+  acts.push({ icon:'🔍', label:'Ver detalle',          fn:() => dispatch({ type:'DETAIL', card }) });
+
+  const mw = 174;
+  const mh = acts.length * 33 + 56;
+  const px = Math.min(x, window.innerWidth  - mw - 8);
+  const py = Math.min(y, window.innerHeight - mh - 8);
+
+  // Card preview sizing
+  const PREV_SCALE = card.type === 'cliente' ? 0.78 : 0.95;
+  const isLCard = card.type === 'cliente';
+  const pNW = isLCard ? 390 : 220, pNH = isLCard ? 272 : 308;
+  const pW = Math.round(pNW * PREV_SCALE), pH = Math.round(pNH * PREV_SCALE);
+  const previewLeft = px > pW + 24;
+  const prevX = previewLeft ? px - pW - 12 : px + mw + 12;
+  const prevY = Math.max(8, Math.min(py, window.innerHeight - pH - 8));
+
+  return (<>
+    <div className="ctx-overlay" onClick={hide}/>
+    {/* Card preview alongside menu */}
+    <div style={{
+      position:'fixed', left:prevX, top:prevY, zIndex:201,
+      pointerEvents:'none',
+      filter:'drop-shadow(0 10px 30px rgba(0,0,0,0.7))',
+    }}>
+      <ScaledCard card={card} scale={PREV_SCALE} onClick={() => {}} fromZone="preview"/>
+    </div>
+    <div className="ctx-menu" style={{ left:px, top:py }}>
+      <div className="ctx-title">
+        {card.name}
+        <div className="ctx-sub"><span className={`badge badge-${TC.cls||''}`}>{TC.icon} {TC.label}</span></div>
+      </div>
+      {acts.map((a, i) => (
+        <button key={i} className={`ctx-btn${a.danger ? ' danger' : ''}`} onClick={a.fn}>
+          <span>{a.icon}</span> {a.label}
+        </button>
+      ))}
+    </div>
+  </>);
+}
+
+// ─── DETAIL OVERLAY ──────────────────────────────────────────────────────────
+function DetailOverlay({ card, dispatch }) {
+  if (!card) return null;
+  const scale = card.type === 'cliente' ? 1.1 : 1.25;
+  return (
+    <div className="detail-overlay" onClick={() => dispatch({ type:'DETAIL', card:null })}>
+      <div className="detail-box" onClick={e => e.stopPropagation()}>
+        <button className="detail-close-btn" onClick={() => dispatch({ type:'DETAIL', card:null })}>✕ Cerrar</button>
+        <ScaledCard card={card} scale={scale} onClick={() => {}} fromZone="detail"/>
+      </div>
+    </div>
+  );
+}
+
+// ─── MARKET SECTION ───────────────────────────────────────────────────────────
+function MarketSection({ title, zone, cards, scale, dropZone, handlers, openCtx, startDrag, onHover, onHoverEnd, color, dispatch, onCardDragEnter, insertPoint, wrapStyle }) {
+  return (
+    <div className="sim-market-section" style={{ flex:1, minHeight:0, overflow:'hidden', display:'flex', flexDirection:'column', ...wrapStyle }}>
+      <div className="zone-label-right" style={{ color }}>
+        <span>{title}</span>
+        <span style={{ color:'#2a3050', fontWeight:400 }}>{cards.length} cartas</span>
+      </div>
+      <DropZone zone={zone} dropZone={dropZone} handlers={handlers}
+        style={{ flex:1, overflow:'auto', padding:'8px 7px', display:'flex', flexWrap:'wrap', flexDirection:'row', gap:8, alignContent:'flex-start' }}>
+        {cards.length === 0 && (
+          <div style={{ color:'#2a3050', fontSize:11, textAlign:'center', padding:'12px 0' }}>Mercado vacío</div>
+        )}
+        {cards.flatMap(card => {
+          const ip = insertPoint?.zone === zone;
+          const before = ip && insertPoint.uid === card._uid && !insertPoint.after;
+          const after  = ip && insertPoint.uid === card._uid &&  insertPoint.after;
+          return [
+            before && <div key={`ins-b-${card._uid}`} className="insert-line"/>,
+            <ScaledCard key={card._uid}
+              card={card} scale={scale} fromZone={zone}
+              onDragStart={startDrag} onHover={onHover} onHoverEnd={onHoverEnd}
+              onClick={e => openCtx(card, zone, e)}
+              dispatch={dispatch}
+              onDragEnterCard={onCardDragEnter}
+            />,
+            after && <div key={`ins-a-${card._uid}`} className="insert-line"/>,
+          ].filter(Boolean);
+        })}
+      </DropZone>
+    </div>
+  );
+}
+
+// ─── CLIENT WITH TALENTS ─────────────────────────────────────────────────────
+function ClientWithTalents({ card, scale, startDrag, openCtx, onHover, onHoverEnd, dropZone, handlers, dragType, dispatch, onCardDragEnter, insertPoint }) {
+  const talentW = Math.round(220 * scale);
+  const talentH = Math.round(308 * scale);
+  const clientW = Math.round(390 * scale);
+  // Each stacked talent is offset so its resource strip + a bit of the card is visible
+  const STRIP = Math.round(72 * scale);
+
+  const assigned = card.assignedTalents || [];
+  const assignedZone = `assigned-${card._uid}`;
+  const isDropTarget = dragType === 'talento' && dropZone === assignedZone;
+
+  // Total width of the talent fan
+  const stackW = assigned.length > 0 ? STRIP * (assigned.length - 1) + talentW : 0;
+  const totalW = Math.max(clientW, stackW);
+
+  return (
+    <div style={{ display:'inline-flex', flexDirection:'column', gap:5, verticalAlign:'top' }}>
+      {/* Client card — becomes a drop target when a talent is being dragged */}
+      <div
+        onDragOver={e => { if (dragType === 'talento') { e.preventDefault(); e.stopPropagation(); handlers.over(assignedZone, e); } }}
+        onDragLeave={e => handlers.leave(assignedZone, e)}
+        onDrop={e => { if (dragType === 'talento') handlers.drop(assignedZone, e); }}
+        style={{
+          borderRadius: 10,
+          outline: isDropTarget ? '2px dashed rgba(52,211,153,0.85)' : '2px dashed transparent',
+          boxShadow: isDropTarget ? '0 0 16px rgba(52,211,153,0.25)' : 'none',
+          transition: 'outline .1s, box-shadow .1s',
+        }}
+      >
+        <ScaledCard card={card} scale={scale} fromZone="mesa"
+          onDragStart={startDrag} onHover={onHover} onHoverEnd={onHoverEnd}
+          onClick={e => openCtx(card, 'mesa', e)} dispatch={dispatch}/>
+      </div>
+      {/* Stacked assigned talents — each offset to the right showing the left resource strip */}
+      {assigned.length > 0 && (
+        <div style={{ position:'relative', width: totalW, height: talentH, flexShrink:0 }}>
+          {assigned.map((t, i) => {
+            const ip = insertPoint?.zone === assignedZone;
+            const isBefore = ip && insertPoint.uid === t._uid && !insertPoint.after;
+            return (
+              <div key={t._uid} style={{ position:'absolute', left: i * STRIP, top:0, zIndex: i }}>
+                {isBefore && <div style={{ position:'absolute', left:-4, top:0, bottom:0, width:3, background:'rgba(99,102,241,0.9)', borderRadius:3, zIndex:20 }}/>}
+                <ScaledCard card={t} scale={scale} fromZone={assignedZone}
+                  onDragStart={startDrag} onHover={onHover} onHoverEnd={onHoverEnd}
+                  onClick={e => openCtx(t, assignedZone, e)}
+                  onDragEnterCard={onCardDragEnter}/>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── APP ─────────────────────────────────────────────────────────────────────
+function App() {
+  const [state, dispatch] = useReducer(reducer, null, () => createInitialState(4));
+  const {
+    turn, money, cultura, resources,
+    mainDeck, clientDeck, hand, mesa, discard,
+    mainMarket, clientMarket,
+    marketSize, ctx, detail, log,
+  } = state;
+
+  // ── Card Set Loader ──
+  const loadSetRef = useRef(null);
+  const [activeSetName, setActiveSetName] = useState('Default');
+  const handleLoadSet = useCallback(e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        _activeCardsData = data;
+        setActiveSetName(file.name.replace(/\.json$/i,''));
+        dispatch({ type:'RESET' });
+      } catch(err) { alert('Error al cargar el set: '+err.message); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }, []);
+
+  // ── Drag & Drop ──
+  const dragRef  = useRef(null);
+  const [dropZone, setDropZone] = useState(null);
+  const [dragType, setDragType] = useState(null);
+  // Intra-zone reorder: track where to insert the dragged card
+  const insertRef = useRef(null);   // { zone, uid, after } — kept in sync with state for use in callbacks
+  const [insertPoint, setInsertPoint] = useState(null);
+  const setInsert = useCallback((v) => { insertRef.current = v; setInsertPoint(v); }, []);
+  const [cardZoom, setCardZoom] = useState(1.0);
+  const [rightWidth, setRightWidth] = useState(584);
+  const isResizingRef = useRef(false);
+  const [isResizing, setIsResizing] = useState(false);
+
+  const startResize = useCallback((e) => {
+    e.preventDefault();
+    const startX     = e.clientX;
+    const startWidth = rightWidth;
+    isResizingRef.current = true;
+    setIsResizing(true);
+    const onMove = (ev) => {
+      const delta    = startX - ev.clientX;
+      const newWidth = Math.max(160, Math.min(680, startWidth + delta));
+      setRightWidth(newWidth);
+    };
+    const onUp = () => {
+      isResizingRef.current = false;
+      setIsResizing(false);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+  }, [rightWidth]);
+
+  const [handHeight, setHandHeight] = useState(206);
+  const [isResizingH, setIsResizingH] = useState(false);
+
+  const startHandResize = useCallback((e) => {
+    e.preventDefault();
+    const startY      = e.clientY;
+    const startHeight = handHeight;
+    setIsResizingH(true);
+    const onMove = (ev) => {
+      const delta     = startY - ev.clientY;   // drag up → hand taller
+      const newHeight = Math.max(80, Math.min(500, startHeight + delta));
+      setHandHeight(newHeight);
+    };
+    const onUp = () => {
+      setIsResizingH(false);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+  }, [handHeight]);
+
+  // ── Hover Preview ──
+  const [hoverCard, setHoverCard] = useState(null);
+  const hoverTimer = useRef(null);
+  const onHover = useCallback((card, x, y) => {
+    clearTimeout(hoverTimer.current);
+    hoverTimer.current = setTimeout(() => setHoverCard({ card, x, y }), 2000);
+  }, []);
+  const onHoverEnd = useCallback(() => {
+    clearTimeout(hoverTimer.current);
+    hoverTimer.current = setTimeout(() => setHoverCard(null), 120);
+  }, []);
+
+  const startDrag = useCallback((card, fromZone, e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    dragRef.current = {
+      card, fromZone,
+      grabOffset: { x: e.clientX - rect.left, y: e.clientY - rect.top },
+    };
+    setDragType(card.type);
+    setInsert(null);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', card._uid); // required in Firefox
+  }, [setInsert]);
+
+  // Clear drag state whenever a drag ends (drop or cancelled)
+  useEffect(() => {
+    const clear = () => { setDragType(null); setInsert(null); };
+    document.addEventListener('dragend', clear);
+    return () => document.removeEventListener('dragend', clear);
+  }, [setInsert]);
+
+  // Intra-zone card drag-enter: sets the insertion point for same-zone reordering
+  const onCardDragEnter = useCallback((uid, zone, e) => {
+    const info = dragRef.current;
+    if (!info || info.fromZone !== zone) return;  // only same-zone reorders
+    if (info.card._uid === uid) return;           // dragging onto itself
+    if (zone === 'mesa') return;                  // mesa uses free positioning, no snap
+    const rect = e.currentTarget.getBoundingClientRect();
+    const after = e.clientX >= rect.left + rect.width / 2;
+    setInsert({ zone, uid, after });
+  }, [setInsert]);
+
+  const over = useCallback((zone, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    setDropZone(zone);
+  }, []);
+
+  const leave = useCallback((zone, e) => {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setDropZone(prev => prev === zone ? null : prev);
+      setInsert(prev => prev?.zone === zone ? null : prev);
+    }
+  }, [setInsert]);
+
+  const drop = useCallback((toZone, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDropZone(null);
+    setDragType(null);
+    const info = dragRef.current;
+    const ins  = insertRef.current;
+    dragRef.current = null;
+    setInsert(null);
+    if (!info) return;
+    if (info.fromZone !== toZone) {
+      // Cross-zone move
+      dispatch({ type:'MOVE', card:info.card, fromZone:info.fromZone, toZone });
+    } else if (ins && ins.zone === toZone) {
+      // Same-zone reorder
+      dispatch({ type:'REORDER', zone:toZone, cardUid:info.card._uid, refUid:ins.uid, after:ins.after });
+    }
+  }, [setInsert]);
+
+  const handlers = { over, leave, drop };
+
+  // ── Mesa free-positioning drop ──
+  const mesaRef = useRef(null);
+  const mesaDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDropZone(null);
+    setDragType(null);
+    const info = dragRef.current;
+    dragRef.current = null;
+    setInsert(null);
+    if (!info || !mesaRef.current) return;
+    const rect = mesaRef.current.getBoundingClientRect();
+    const x = Math.max(0, e.clientX - rect.left - (info.grabOffset?.x ?? 0));
+    const y = Math.max(0, e.clientY - rect.top  - (info.grabOffset?.y ?? 0));
+    if (info.fromZone === 'mesa') {
+      dispatch({ type:'POSITION_CARD', uid:info.card._uid, x, y });
+    } else {
+      dispatch({ type:'MOVE', card:info.card, fromZone:info.fromZone, toZone:'mesa', x, y });
+    }
+  }, [setInsert]);
+
+  // ── Context menu ──
+  const openCtx = useCallback((card, zone, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch({ type:'CTX', v:{ card, zone, x:e.clientX, y:e.clientY } });
+  }, []);
+
+  // ── Scale for market - use smaller scale for portrait cards so they fit
+  const cardScale = Math.round(0.54 * cardZoom * 100) / 100;
+  const mktScale  = cardScale;
+  const handScale = cardScale;
+  const mesaScale = cardScale;
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden' }}>
+
+      {/* ── STATUS BAR ── */}
+      <div className="sim-statusbar">
+        <div className="turn-badge">Turno <span className="turn-number">{turn}</span></div>
+        <StatTile label="Dinero" icon="💰" value={`${money}K`} color="#fbbf24"
+          onP={() => dispatch({ type:'ADJUST', k:'money',   d:1 })}
+          onM={() => dispatch({ type:'ADJUST', k:'money',   d:-1 })}/>
+        <StatTile label="Cultura" icon="✦" value={cultura} color="#a78bfa"
+          onP={() => dispatch({ type:'ADJUST', k:'cultura', d:1 })}
+          onM={() => dispatch({ type:'ADJUST', k:'cultura', d:-1 })}/>
+        <div style={{ display:'flex', alignItems:'center', gap:3, background:'#1a1d27', border:'1px solid #2d3347', borderRadius:8, padding:'4px 8px' }}>
+          <span style={{ fontSize:13 }}>🔍</span>
+          <button className="stat-btn" onClick={() => setCardZoom(z => Math.max(0.4, Math.round((z-0.1)*10)/10))}>−</button>
+          <span style={{ fontSize:12, fontWeight:700, color:'#94a3b8', minWidth:36, textAlign:'center' }}>{Math.round(cardZoom*100)}%</span>
+          <button className="stat-btn" onClick={() => setCardZoom(z => Math.min(1.8, Math.round((z+0.1)*10)/10))}>+</button>
+        </div>
+        <button className="load-set-btn" onClick={() => loadSetRef.current?.click()} title="Cargar card set desde JSON">
+          📂 <span style={{maxWidth:90,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',display:'inline-block',verticalAlign:'middle'}}>{activeSetName}</span>
+        </button>
+        <input ref={loadSetRef} type="file" accept=".json" style={{display:'none'}} onChange={handleLoadSet}/>
+        <button className="end-turn-btn" onClick={() => dispatch({ type:'END_TURN' })}>Fin de Turno ⏭</button>
+        <button className="reset-btn" onClick={() => dispatch({ type:'RESET' })} title="Reiniciar">↺</button>
+      </div>
+
+      {/* ── BOARD ── */}
+      <div className="sim-board" style={{ userSelect: (isResizing || isResizingH) ? 'none' : 'auto' }}>
+
+        {/* ── LEFT: DECKS + LOG ── */}
+        <div className="sim-left">
+          <div style={{ fontSize:8, fontWeight:700, textTransform:'uppercase', letterSpacing:1, color:'#2a3050' }}>Mazos</div>
+          <DeckPile label="Principal" icon="🎴" count={mainDeck.length} color="#c8a060"
+            zone="mainDeck" dropZone={dropZone} handlers={handlers}
+            onDraw={() => dispatch({ type:'DRAW_MAIN' })}
+            onShuffle={() => dispatch({ type:'SHUFFLE_MAIN' })}/>
+          <DeckPile label="Clientes" icon="🤝" count={clientDeck.length} color="#7aaa90"
+            zone="clientDeck" dropZone={dropZone} handlers={handlers}
+            onDraw={() => dispatch({ type:'DRAW_CLIENT' })}
+            onShuffle={() => dispatch({ type:'SHUFFLE_CLIENT' })}/>
+
+          <div style={{ fontSize:8, fontWeight:700, textTransform:'uppercase', letterSpacing:1, color:'#2a3050', marginTop:4 }}>Descarte</div>
+          <DiscardPile top={discard[0]||null} count={discard.length} dispatch={dispatch}
+            zone="discard" dropZone={dropZone} handlers={handlers} startDrag={startDrag}/>
+
+          <div style={{ flex:1 }}/>
+          <div style={{ fontSize:8, fontWeight:700, textTransform:'uppercase', letterSpacing:1, color:'#2a3050' }}>Registro</div>
+          <div style={{ background:'#0d1019', borderRadius:6, padding:'5px 7px', fontSize:9, lineHeight:1.75, maxHeight:120, overflowY:'auto' }}>
+            {log.map((l, i) => <div key={i} style={{ color: i===0 ? '#94a3b8' : '#2d3450' }}>{l}</div>)}
+          </div>
+        </div>
+
+        {/* ── CENTER: MESA + MANO ── */}
+        <div className="sim-center">
+          <div className="zone-label">
+            <span>Mesa — {mesa.length} carta{mesa.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div
+            ref={mesaRef}
+            className={`sim-mesa${dropZone === 'mesa' ? ' drop-active' : ''}`}
+            onDragOver={e => { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move'; setDropZone('mesa'); }}
+            onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDropZone(null); }}
+            onDrop={mesaDrop}
+          >
+            {mesa.length === 0 && (
+              <div className="empty-zone" style={{ position:'absolute', inset:0, display:'flex' }}>
+                <div><div style={{ fontSize:28, marginBottom:6 }}>🃏</div>Mesa vacía<br/><span style={{ fontSize:10 }}>Jugá o arrastá cartas aquí</span></div>
+              </div>
+            )}
+            {mesa.map(card => (
+              card.type === 'cliente'
+                ? <div key={card._uid} style={{ position:'absolute', left: card._x ?? 20, top: card._y ?? 20 }}>
+                    <ClientWithTalents card={card} scale={mesaScale}
+                      startDrag={startDrag} openCtx={openCtx}
+                      onHover={onHover} onHoverEnd={onHoverEnd}
+                      dropZone={dropZone} handlers={handlers} dragType={dragType} dispatch={dispatch}
+                      onCardDragEnter={onCardDragEnter} insertPoint={insertPoint}/>
+                  </div>
+                : <div key={card._uid} style={{ position:'absolute', left: card._x ?? 20, top: card._y ?? 20 }}>
+                    <ScaledCard card={card} scale={mesaScale}
+                      fromZone="mesa" onDragStart={startDrag}
+                      onHover={onHover} onHoverEnd={onHoverEnd}
+                      onClick={e => openCtx(card, 'mesa', e)} dispatch={dispatch}
+                      onDragEnterCard={onCardDragEnter}/>
+                  </div>
+            ))}
+          </div>
+
+          {/* ── HORIZONTAL RESIZE HANDLE ── */}
+          <div
+            className={`resize-handle-h${isResizingH ? ' active' : ''}`}
+            onMouseDown={startHandResize}
+            title="Arrastrá para redimensionar la mano"
+          />
+
+          <div className="zone-label">
+            <span>Mano — {hand.length} carta{hand.length !== 1 ? 's' : ''}</span>
+          </div>
+          <DropZone zone="hand" dropZone={dropZone} handlers={handlers}
+            className="sim-hand" style={{ height: handHeight, minHeight: handHeight }}>
+            {hand.length === 0 && <div style={{ color:'#2a3050', fontSize:11, margin:'auto' }}>Mano vacía — click en el mazo para robar</div>}
+            {hand.flatMap(card => {
+              const ip = insertPoint?.zone === 'hand';
+              const before = ip && insertPoint.uid === card._uid && !insertPoint.after;
+              const after  = ip && insertPoint.uid === card._uid &&  insertPoint.after;
+              return [
+                before && <div key={`ins-b-${card._uid}`} className="insert-line"/>,
+                <ScaledCard key={card._uid} card={card} scale={handScale}
+                  fromZone="hand" onDragStart={startDrag}
+                  onHover={onHover} onHoverEnd={onHoverEnd}
+                  onClick={e => openCtx(card, 'hand', e)} dispatch={dispatch}
+                  onDragEnterCard={onCardDragEnter}/>,
+                after && <div key={`ins-a-${card._uid}`} className="insert-line"/>,
+              ].filter(Boolean);
+            })}
+          </DropZone>
+        </div>
+
+        {/* ── RESIZE HANDLE ── */}
+        <div
+          className={`resize-handle${isResizing ? ' active' : ''}`}
+          onMouseDown={startResize}
+          title="Arrastrá para redimensionar el mercado"
+        />
+
+        {/* ── RIGHT: MARKETS ── */}
+        <div className="sim-right" style={{ width: rightWidth, minWidth: rightWidth }}>
+          {/* Market size control */}
+          <div className="mkt-size-ctrl">
+            <span>Mercado</span>
+            <button className="stat-btn" onClick={() => dispatch({ type:'SET_MKT_SIZE', v:marketSize-1 })}>−</button>
+            <span className="mkt-size-val">{marketSize}</span>
+            <button className="stat-btn" onClick={() => dispatch({ type:'SET_MKT_SIZE', v:marketSize+1 })}>+</button>
+            <span style={{ marginLeft:2 }}>cartas</span>
+          </div>
+
+          {/* Client Market */}
+          <MarketSection
+            title="🤝 Clientes"
+            zone="clientMarket"
+            cards={clientMarket}
+            scale={mktScale}
+            dropZone={dropZone}
+            handlers={handlers}
+            openCtx={openCtx}
+            startDrag={startDrag}
+            onHover={onHover}
+            onHoverEnd={onHoverEnd}
+            color="#7aaa90"
+            dispatch={dispatch}
+            onCardDragEnter={onCardDragEnter}
+            insertPoint={insertPoint}
+          />
+
+          <div className="mkt-divider"/>
+
+          {/* Main Market */}
+          <MarketSection
+            title="🎴 Cartas"
+            zone="mainMarket"
+            cards={mainMarket}
+            scale={mktScale}
+            dropZone={dropZone}
+            handlers={handlers}
+            openCtx={openCtx}
+            startDrag={startDrag}
+            onHover={onHover}
+            onHoverEnd={onHoverEnd}
+            color="#c4a060"
+            dispatch={dispatch}
+            onCardDragEnter={onCardDragEnter}
+            insertPoint={insertPoint}
+            wrapStyle={{ flex:'none', height:handHeight, minHeight:handHeight, maxHeight:handHeight }}
+          />
+        </div>
+      </div>
+
+      <HoverPreview hoverCard={ctx ? null : hoverCard}/>
+      <CtxMenu ctx={ctx} dispatch={dispatch}/>
+      <DetailOverlay card={detail} dispatch={dispatch}/>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
