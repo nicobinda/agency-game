@@ -165,7 +165,7 @@ const CARDS_DATA = {"clients": [{"id": "client-001", "name": "Galería Emergente
     var t = e.touches[0];
     dragging = true; dragSrc = src;
     ghost = makeGhost(src, t.clientX, t.clientY);
-    fire(src, 'dragstart');
+    fire(src, 'dragstart', t.clientX, t.clientY);
   }, { passive: false });
 
   document.addEventListener('touchmove', function (e) {

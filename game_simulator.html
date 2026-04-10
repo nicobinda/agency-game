@@ -169,7 +169,7 @@
     var t = e.touches[0];
     dragging = true; dragSrc = src;
     ghost = makeGhost(src, t.clientX, t.clientY);
-    fire(src, 'dragstart');
+    fire(src, 'dragstart', t.clientX, t.clientY);
   }, { passive: false });
 
   document.addEventListener('touchmove', function (e) {
@@ -1734,8 +1734,10 @@ function App() {
     };
     setDragType(card.type);
     setInsert(null);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', card._uid); // required in Firefox
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card._uid); // required in Firefox
+    }
   }, [setInsert]);
 
   // Clear drag state whenever a drag ends (drop or cancelled)
@@ -1759,7 +1761,7 @@ function App() {
   const over = useCallback((zone, e) => {
     e.preventDefault();
     e.stopPropagation();
-    e.dataTransfer.dropEffect = 'move';
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
     setDropZone(zone);
   }, []);
 
@@ -1885,7 +1887,7 @@ function App() {
           <div
             ref={mesaRef}
             className={`sim-mesa${dropZone === 'mesa' ? ' drop-active' : ''}`}
-            onDragOver={e => { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move'; setDropZone('mesa'); }}
+            onDragOver={e => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; setDropZone('mesa'); }}
             onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDropZone(null); }}
             onDrop={mesaDrop}
           >
