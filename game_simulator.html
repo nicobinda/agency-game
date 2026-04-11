@@ -128,15 +128,12 @@
 <body>
 <div id="root"></div>
 <script>
-/* ── Immediate touch-to-drag for mobile/iPad ── */
+/* ── Touch-to-drag + tap detection for mobile/iPad ── */
 (function () {
-  var dragging = false, dragSrc = null, ghost = null, lastOver = null;
-  var offX = 0, offY = 0;
+  var DRAG_THRESHOLD = 10;
+  var ts = null; // touch state: { src, startX, startY, offX, offY, rect, dragging, ghost, lastOver }
 
-  function makeGhost(src, tx, ty) {
-    var r = src.getBoundingClientRect();
-    offX = tx - r.left;
-    offY = ty - r.top;
+  function makeGhost(src, r) {
     var g = src.cloneNode(true);
     g.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;opacity:0.85;'
       + 'margin:0;transition:none;transform:scale(1.05);'
@@ -156,51 +153,75 @@
   }
 
   function elAt(x, y) {
-    if (ghost) ghost.style.visibility = 'hidden';
+    if (ts && ts.ghost) ts.ghost.style.visibility = 'hidden';
     var el = document.elementFromPoint(x, y);
-    if (ghost) ghost.style.visibility = '';
+    if (ts && ts.ghost) ts.ghost.style.visibility = '';
     return el;
   }
 
   document.addEventListener('touchstart', function (e) {
+    // Let .ctx-trigger (the ⋯ button) handle its own tap naturally
+    if (e.target.closest('.ctx-trigger')) return;
     var src = e.target.closest('[draggable="true"]');
     if (!src) return;
     e.preventDefault();
     var t = e.touches[0];
-    dragging = true; dragSrc = src;
-    ghost = makeGhost(src, t.clientX, t.clientY);
-    fire(src, 'dragstart', t.clientX, t.clientY);
+    var r = src.getBoundingClientRect();
+    ts = {
+      src: src,
+      startX: t.clientX, startY: t.clientY,
+      offX: t.clientX - r.left, offY: t.clientY - r.top,
+      rect: r,
+      dragging: false, ghost: null, lastOver: null,
+    };
   }, { passive: false });
 
   document.addEventListener('touchmove', function (e) {
-    if (!dragging) return;
+    if (!ts) return;
     e.preventDefault();
     var t = e.touches[0];
-    ghost.style.left = (t.clientX - offX) + 'px';
-    ghost.style.top  = (t.clientY - offY) + 'px';
+    var dx = t.clientX - ts.startX, dy = t.clientY - ts.startY;
+
+    if (!ts.dragging) {
+      if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+      ts.dragging = true;
+      ts.ghost = makeGhost(ts.src, ts.rect);
+      fire(ts.src, 'dragstart', ts.startX, ts.startY);
+    }
+
+    ts.ghost.style.left = (t.clientX - ts.offX) + 'px';
+    ts.ghost.style.top  = (t.clientY - ts.offY) + 'px';
+
     var el = elAt(t.clientX, t.clientY);
-    if (el !== lastOver) {
-      if (lastOver) fire(lastOver, 'dragleave', t.clientX, t.clientY);
-      lastOver = el;
+    if (el !== ts.lastOver) {
+      if (ts.lastOver) fire(ts.lastOver, 'dragleave', t.clientX, t.clientY);
+      ts.lastOver = el;
     }
     if (el) fire(el, 'dragover', t.clientX, t.clientY);
   }, { passive: false });
 
   document.addEventListener('touchend', function (e) {
-    if (!dragging) return;
+    if (!ts) return;
     var t = e.changedTouches[0];
-    var el = elAt(t.clientX, t.clientY);
-    if (el) fire(el, 'drop', t.clientX, t.clientY);
-    fire(dragSrc, 'dragend', t.clientX, t.clientY);
-    ghost.remove();
-    ghost = null; dragging = false; dragSrc = null; lastOver = null;
+    if (ts.dragging) {
+      var el = elAt(t.clientX, t.clientY);
+      if (el) fire(el, 'drop', t.clientX, t.clientY);
+      fire(ts.src, 'dragend', t.clientX, t.clientY);
+      if (ts.ghost) ts.ghost.remove();
+    } else {
+      // Tap: fire synthetic click so React onClick handlers fire
+      ts.src.dispatchEvent(new MouseEvent('click', {
+        bubbles: true, cancelable: true,
+        clientX: t.clientX, clientY: t.clientY, view: window,
+      }));
+    }
+    ts = null;
   }, { passive: false });
 
   document.addEventListener('touchcancel', function () {
-    if (!dragging) return;
-    fire(dragSrc, 'dragend');
-    if (ghost) ghost.remove();
-    ghost = null; dragging = false; dragSrc = null; lastOver = null;
+    if (!ts) return;
+    if (ts.dragging) { fire(ts.src, 'dragend'); if (ts.ghost) ts.ghost.remove(); }
+    ts = null;
   });
 })();
 </script>
@@ -354,11 +375,12 @@ function CostBox({ cost, recurring, align='center', bigSize=22 }) {
 
 // ── TALENTO ──────────────────────────────────────────────────────────────────
 function CardTalento({card}) {
+  const missionColors = React.useContext(MissionColorsCtx);
   const resources = card.resources || [];
   const sorted = [...resources].sort((a,b) => a.type==='manager' ? -1 : b.type==='manager' ? 1 : 0);
   const displayCost = (card.recurringCost || 0) > 0 ? card.recurringCost : (card.cost || 0);
   const mision = card.mision || '';
-  const missionColor = mision ? (MISSION_COLOR_MAP[mision] || '#9D846B') : '#6B7280';
+  const missionColor = mision ? (missionColors[mision] || '#9D846B') : '#6B7280';
 
   // Flatten resource icons, max 3 total
   const icons = sorted.flatMap(res =>
@@ -371,8 +393,8 @@ function CardTalento({card}) {
   return (
     <div style={{position:'relative', width:'100%', height:'100%', overflow:'hidden', borderRadius:'inherit'}}>
 
-      {/* ── Background (gray placeholder → artwork) ── */}
-      <div style={{position:'absolute', inset:0, background:'#888'}}/>
+      {/* ── Background (artwork or gray placeholder) ── */}
+      <div style={{position:'absolute', inset:0, background: card.artImage ? `url(${card.artImage}) center/cover` : '#888'}}/>
 
       {/* ── Left mission color bar ── */}
       <div style={{position:'absolute', left:0, top:0, bottom:0, width:BAR_W, background:missionColor}}/>
@@ -482,6 +504,28 @@ const MISSION_COLOR_MAP = {
   retail:'#BE4486', tecnologia:'#6638B8', viajes:'#72B3F5',
 };
 
+const DEFAULT_MISSION_COLORS = {
+  arte:'#A88ED8', deporte:'#C6CFE8', entretenimiento:'#F0D498',
+  finanzas:'#9D846B', gastronomia:'#F15F02', naturaleza:'#43E95A',
+  retail:'#BE4486', tecnologia:'#6638B8', viajes:'#72B3F5',
+};
+const MISSIONS_LIST = ['arte','deporte','entretenimiento','finanzas','gastronomia','naturaleza','retail','tecnologia','viajes'];
+function _hexToRgb(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function _toHex(r,g,b){return'#'+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0')).join('');}
+function injectMissionCss(colors) {
+  let tag = document.getElementById('sim-mission-dynamic-css');
+  if (!tag){tag=document.createElement('style');tag.id='sim-mission-dynamic-css';document.head.appendChild(tag);}
+  tag.textContent = MISSIONS_LIST.map(m => {
+    const main = (colors && colors[m]) || DEFAULT_MISSION_COLORS[m];
+    const [r,g,b] = _hexToRgb(main);
+    const strip = _toHex(r*0.75, g*0.75, b*0.75);
+    const bg    = _toHex(r+(255-r)*0.87, g+(255-g)*0.87, b+(255-b)*0.87);
+    return `.mission-bg-${m}{background:${bg}!important;border-color:${strip}!important;}`;
+  }).join('');
+}
+// React context — card components consume this for inline colors
+const MissionColorsCtx = React.createContext({...DEFAULT_MISSION_COLORS});
+
 function missionBarTextColor(hex) {
   if (!hex) return '#111';
   const r = parseInt(hex.slice(1,3),16);
@@ -491,10 +535,11 @@ function missionBarTextColor(hex) {
 }
 
 function CardCliente({card}) {
+  const missionColors = React.useContext(MissionColorsCtx);
   const levels = card.levels || [];
   const mision = card.mision || '';
   const misionLabel = mision.charAt(0).toUpperCase() + mision.slice(1);
-  const missionColor = MISSION_COLOR_MAP[mision] || '#9D846B';
+  const missionColor = missionColors[mision] || '#9D846B';
   const barTextColor = missionBarTextColor(missionColor);
 
   const BAR_H   = 36;
@@ -507,8 +552,8 @@ function CardCliente({card}) {
   return (
     <div style={{position:'relative', width:'100%', height:'100%', overflow:'hidden', borderRadius:'inherit'}}>
 
-      {/* ── Background (gray placeholder → replaced by artwork) ── */}
-      <div style={{position:'absolute', inset:0, background:'#888'}}/>
+      {/* ── Background (artwork or gray placeholder) ── */}
+      <div style={{position:'absolute', inset:0, background: card.artImage ? `url(${card.artImage}) center/cover` : '#888'}}/>
 
       {/* ── Name banner ── */}
       <div style={{
@@ -635,8 +680,8 @@ function CardActionNew({ card, bgColor, costBg, costTextColor, costLabel,
   return (
     <div style={{position:'relative', width:'100%', height:'100%', overflow:'hidden', borderRadius:'inherit'}}>
 
-      {/* ── Background (artwork placeholder) ── */}
-      <div style={{position:'absolute', inset:0, background:bgColor}}/>
+      {/* ── Background (artwork or card color) ── */}
+      <div style={{position:'absolute', inset:0, background: card.artImage ? `url(${card.artImage}) center/cover` : bgColor}}/>
 
       {/* ── Black border frame ── */}
       <div style={{
@@ -849,6 +894,9 @@ function shuffle(arr) {
   return a;
 }
 
+// Per-player accent colors (1-indexed display, 0-indexed array)
+const PLAYER_COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444'];
+
 let _uid = 0;
 function mkUid(c) {
   const base = { ...c, _uid: `${c.id}-${++_uid}` };
@@ -871,25 +919,47 @@ function buildMain() {
 }
 function buildClients() { return shuffle((getCardsData().clients||[]).map(mkUid)); }
 
-function createInitialState(ms = 4) {
+function createInitialState(ms = 4, numPlayers = 1) {
   const main    = buildMain();
   const clients = buildClients();
   const HAND = 4;
+  const totalHandCards = HAND * numPlayers;
+  const players = Array.from({ length: numPlayers }, (_, i) => ({
+    name: `Jugador ${i + 1}`,
+    hand: main.slice(i * HAND, (i + 1) * HAND),
+    mesa: [],
+    money: 4,
+    cultura: 2,
+    resources: { creativo:0, desarrollo:0, analista:0, manager:0 },
+  }));
   return {
     marketSize:   ms,
-    turn: 0, money: 4, cultura: 2,
-    resources: { creativo:0, desarrollo:0, analista:0, manager:0 },
-    mainDeck:     main.slice(HAND + ms),
+    numPlayers,
+    activePlayer: 0,
+    players,
+    turn: 0,
+    mainDeck:     main.slice(totalHandCards + ms),
     clientDeck:   clients.slice(ms),
-    hand:         main.slice(0, HAND),
-    mesa:         [],
     discard:      [],
-    mainMarket:   main.slice(HAND, HAND + ms),
+    mainMarket:   main.slice(totalHandCards, totalHandCards + ms),
     clientMarket: clients.slice(0, ms),
     ctx:   null,
     detail:null,
     log: ['🎮 Juego iniciado — Turno 0'],
   };
+}
+
+// ── Flatten active player's fields into state root (for reducer backward-compat) ──
+function flatP(state) {
+  const p = state.players[state.activePlayer];
+  return { ...state, hand: p.hand, mesa: p.mesa, money: p.money, cultura: p.cultura, resources: p.resources };
+}
+// Store modified flat fields back into the active player slot
+function unFlatP(flat, orig) {
+  const { hand, mesa, money, cultura, resources, ...rest } = flat;
+  const players = orig.players.map((p, i) => i !== orig.activePlayer ? p
+    : { ...p, hand, mesa, money, cultura, resources });
+  return { ...rest, players };
 }
 
 // ─── REDUCER HELPERS ─────────────────────────────────────────────────────────
@@ -947,24 +1017,31 @@ function reducer(state, action) {
     case 'DRAW_MAIN': {
       if (!state.mainDeck.length) return addLog('🚫 Mazo principal vacío', state);
       const [top, ...rest] = state.mainDeck;
-      return addLog(`⬆️ Robaste: ${top.name}`, { ...state, mainDeck: rest, hand: [...state.hand, top] });
+      const flat = flatP(state);
+      return unFlatP(addLog(`🃏 Robaste: ${top.name}`, { ...flat, mainDeck: rest, hand: [...flat.hand, top] }), state);
     }
     case 'DRAW_CLIENT': {
       if (!state.clientDeck.length) return addLog('🚫 Mazo de clientes vacío', state);
       const [top, ...rest] = state.clientDeck;
-      return addLog(`⬆️ Cliente: ${top.name}`, { ...state, clientDeck: rest, hand: [...state.hand, top] });
+      const flat = flatP(state);
+      return unFlatP(addLog(`🃏 Cliente: ${top.name}`, { ...flat, clientDeck: rest, hand: [...flat.hand, top] }), state);
     }
     case 'POSITION_CARD': {
       // Move a card freely within the mesa and bring it to front (last in array = top z-index)
       const { uid, x, y } = action;
-      const card = state.mesa.find(c => c._uid === uid);
+      // Apply to the player whose mesa is being targeted (use viewingPlayer if passed, else activePlayer)
+      const pi = action.playerIdx !== undefined ? action.playerIdx : state.activePlayer;
+      const pmesa = state.players[pi].mesa;
+      const card = pmesa.find(c => c._uid === uid);
       if (!card) return state;
-      const rest = state.mesa.filter(c => c._uid !== uid);
-      return { ...state, mesa: [...rest, { ...card, _x: x, _y: y }] };
+      const newMesa = [...pmesa.filter(c => c._uid !== uid), { ...card, _x: x, _y: y }];
+      const players = state.players.map((p, i) => i === pi ? { ...p, mesa: newMesa } : p);
+      return { ...state, players };
     }
     case 'MOVE': {
       const { card, fromZone, x, y } = action;
-      // ── Auto-redirect: enforce client / non-client zone rules ──
+      // Moves always operate on the active player's personal zones (hand/mesa/assigned)
+      // Shared zones (market, decks, discard) are accessible too via flatP
       const isClient = card.type === 'cliente';
       let toZone = action.toZone;
       if (isClient  && toZone === 'mainMarket') toZone = 'clientMarket';
@@ -978,29 +1055,22 @@ function reducer(state, action) {
         if (z.startsWith('assigned-')) return 'Asignado a cliente';
         return { hand:'Mano', mesa:'Mesa', mainDeck:'Mazo Principal', clientDeck:'Mazo Clientes', discard:'Descarte', mainMarket:'Mercado Principal', clientMarket:'Mercado Clientes' }[z] || z;
       };
-      let s = state;
+      // Flatten active player into state root so removeFrom/addTo work unchanged
+      let s = flatP(state);
       let culturaDelta = 0;
       const isTalent = card.type === 'talento';
 
       // ── Cultura tracking ──────────────────────────────────────────────────────
-      // Each talent has a net cultura effect depending on its zone:
-      //   hand/discard/deck/market → 0
-      //   mesa (unassigned)        → -1
-      //   assigned with mission match → +1
-      //   assigned without match   → 0
-      // Delta = newEffect - oldEffect
       if (isTalent) {
         const zoneEffect = (zone) => {
           if (zone === 'mesa') return -1;
           if (zone.startsWith('assigned-')) {
-            // Talent always pays the -1 play cost while in any play zone.
-            // Mission match gives +1 that offsets it → net 0; no match → net -1.
             const cUid = zone.slice(9);
             const client = s.mesa.find(c => c._uid === cUid);
             const matchBonus = (client && card.mision && client.mision && card.mision === client.mision) ? 1 : 0;
             return -1 + matchBonus;
           }
-          return 0; // hand, discard, market, deck — not in play
+          return 0;
         };
         culturaDelta = zoneEffect(toZone) - zoneEffect(fromZone);
       }
@@ -1009,24 +1079,16 @@ function reducer(state, action) {
       if (fromZone === 'mesa' && card.type === 'cliente') {
         const mCard = s.mesa.find(c => c._uid === card._uid);
         if (mCard?.assignedTalents?.length) {
-          // Each assigned talent returns to the mesa:
-          // - it re-enters mesa so pays -1 for the mesa cost
-          // - it loses its mission bonus if it had one (−1)
-          // Net: -1 (mesa cost stays) + possibly -1 (lost mission bonus)
           mCard.assignedTalents.forEach(t => {
             if (t.type === 'talento') {
-              // talent was in assigned slot (conceptually on mesa), now explicitly on mesa:
-              // the mesa cost was already being paid implicitly; but mission bonus is lost
-              if (t.mision && mCard.mision && t.mision === mCard.mision) {
-                culturaDelta -= 1; // lose mission alignment bonus
-              }
+              if (t.mision && mCard.mision && t.mision === mCard.mision) culturaDelta -= 1;
             }
           });
-          s = { ...s, mesa: s.mesa.filter(c => c._uid !== card._uid) };      // remove client
-          s = { ...s, mesa: [...s.mesa, ...mCard.assignedTalents] };          // release talents
+          s = { ...s, mesa: s.mesa.filter(c => c._uid !== card._uid) };
+          s = { ...s, mesa: [...s.mesa, ...mCard.assignedTalents] };
           s = addTo(s, toZone, card);
           s = { ...s, cultura: (s.cultura || 0) + culturaDelta };
-          return addLog(`↔️ ${card.name} → ${zLabel(toZone)}`, s);
+          return unFlatP(addLog(`↔️ ${card.name} → ${zLabel(toZone)}`, s), state);
         }
       }
 
@@ -1034,17 +1096,17 @@ function reducer(state, action) {
       const cardWithPos = (toZone === 'mesa' && x !== undefined) ? { ...card, _x: x, _y: y } : card;
       s = addTo(s, toZone, cardWithPos);
       s = { ...s, cultura: (s.cultura || 0) + culturaDelta };
-      return addLog(`↔️ ${card.name} → ${zLabel(toZone)}`, s);
+      return unFlatP(addLog(`↔️ ${card.name} → ${zLabel(toZone)}`, s), state);
     }
     case 'ADJUST': {
+      const flat = flatP(state);
       if (action.res) {
-        const v = Math.max(0, (state.resources[action.res] || 0) + action.d);
-        return { ...state, resources: { ...state.resources, [action.res]: v } };
+        const v = Math.max(0, (flat.resources[action.res] || 0) + action.d);
+        return unFlatP({ ...flat, resources: { ...flat.resources, [action.res]: v } }, state);
       }
-      const newVal = (state[action.k] || 0) + action.d;
-      // Cultura can go negative; all other stats are floored at 0
+      const newVal = (flat[action.k] || 0) + action.d;
       const clamped = action.k === 'cultura' ? newVal : Math.max(0, newVal);
-      return { ...state, [action.k]: clamped };
+      return unFlatP({ ...flat, [action.k]: clamped }, state);
     }
     case 'SET_MKT_SIZE': {
       const ms = Math.max(1, Math.min(8, action.v));
@@ -1096,7 +1158,7 @@ function reducer(state, action) {
         discardNote = ` · 🗑️ descarte ${n}`;
       }
 
-      // ── 1. Level-up: find the highest level the client can reach ───────────
+      // ── 1. Level-up: max 1 nivel por turno ──────────────────────────────────
       const levelUps = [];
       s = {
         ...s,
@@ -1104,25 +1166,18 @@ function reducer(state, action) {
           if (card.type !== 'cliente') return card;
           const cur = card.currentLevel || 1;
           const maxLvl = (card.levels || []).length;
-          if (cur >= maxLvl) return card; // already at max
+          if (cur >= maxLvl) return card; // ya está en el máximo
+          const nextDef = getLvl(card, cur + 1);
+          if (!nextDef) return card;
           const pool = sumResources(card.assignedTalents);
-          // Find the highest level achievable (skip levels if resources allow)
-          let newLevel = cur;
-          for (let lvl = maxLvl; lvl > cur; lvl--) {
-            const def = getLvl(card, lvl);
-            if (def && satisfies(pool, def.requirements)) {
-              newLevel = lvl;
-              break;
-            }
-          }
-          if (newLevel > cur) {
-            levelUps.push(`${card.name} → nivel ${newLevel}`);
-            return { ...card, currentLevel: newLevel };
+          if (satisfies(pool, nextDef.requirements)) {
+            levelUps.push(`${card.name} → nivel ${cur + 1}`);
+            return { ...card, currentLevel: cur + 1 };
           }
           return card;
         }),
       };
-      if (levelUps.length) s = addLog(`⬆️ Subida de nivel: ${levelUps.join(', ')}`, s);
+      if (levelUps.length) s = addLog(`⬆️ Subida de nivel (máx. 1/turno): ${levelUps.join(', ')}`, s);
 
       // ── 2. Collect fees from clients with enough resources ───────────────────
       let totalFee = 0;
@@ -1269,7 +1324,7 @@ function reducer(state, action) {
 }
 
 // ─── SCALED CARD ─────────────────────────────────────────────────────────────
-function ScaledCard({ card, scale, onClick, fromZone, onDragStart, onHover, onHoverEnd, dispatch, onDragEnterCard }) {
+function ScaledCard({ card, scale, onClick, fromZone, onDragStart, onHover, onHoverEnd, dispatch, onDragEnterCard, tapSel, setTapSel }) {
   const isL = card.type === 'cliente';
   const NW = isL ? 390 : 220, NH = isL ? 272 : 308;
   const W = Math.round(NW * scale), H = Math.round(NH * scale);
@@ -1282,14 +1337,24 @@ function ScaledCard({ card, scale, onClick, fromZone, onDragStart, onHover, onHo
     (isL && card.mision) ? `mission-bg-${card.mision}` : '',
   ].filter(Boolean).join(' ');
 
+  const isMobile = window.innerWidth < 1024;
+  const isSelected = isMobile && setTapSel && tapSel && tapSel.uid === card._uid && tapSel.zone === fromZone;
+  const handleClick = (e) => {
+    if (isMobile && setTapSel) {
+      if (isSelected) { setTapSel(null); } else { setTapSel({ uid: card._uid, zone: fromZone }); }
+      return;
+    }
+    onClick && onClick(e);
+  };
+
   return (
     <div
       className="card-scaled"
-      style={{ width: W, height: H }}
+      style={{ width: W, height: H, ...(isSelected ? { boxShadow:'0 0 0 2px rgba(255,255,255,0.9), 0 0 18px 5px rgba(255,255,255,0.28)', zIndex:5, borderRadius:6 } : {}) }}
       draggable={true}
       onDragStart={e => { onDragStart && onDragStart(card, fromZone || 'unknown', e); }}
       onDragEnter={e => { onDragEnterCard && onDragEnterCard(card._uid, fromZone, e); }}
-      onClick={onClick}
+      onClick={handleClick}
       onMouseEnter={e => onHover && onHover(card, e.clientX, e.clientY)}
       onMouseLeave={() => onHoverEnd && onHoverEnd()}
     >
@@ -1325,6 +1390,23 @@ function ScaledCard({ card, scale, onClick, fromZone, onDragStart, onHover, onHo
           >{cur}</div>
         );
       })()}
+      {/* ⋯ context button — mobile only, shown when card is tap-selected */}
+      {isSelected && (
+        <div
+          className="ctx-trigger"
+          onClick={e => { e.stopPropagation(); onClick && onClick(e); setTapSel(null); }}
+          style={{
+            position:'absolute', bottom:6, right:6, zIndex:20,
+            width:30, height:30, borderRadius:'50%',
+            background:'rgba(10,12,22,0.93)',
+            border:'1.5px solid rgba(255,255,255,0.6)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            fontSize:15, letterSpacing:2, color:'#f1f5f9',
+            cursor:'pointer', userSelect:'none',
+            boxShadow:'0 2px 10px rgba(0,0,0,0.7)',
+          }}
+        >···</div>
+      )}
     </div>
   );
 }
@@ -1547,7 +1629,7 @@ function DetailOverlay({ card, dispatch }) {
 }
 
 // ─── MARKET SECTION ───────────────────────────────────────────────────────────
-function MarketSection({ title, zone, cards, scale, dropZone, handlers, openCtx, startDrag, onHover, onHoverEnd, color, dispatch, onCardDragEnter, insertPoint, wrapStyle }) {
+function MarketSection({ title, zone, cards, scale, dropZone, handlers, openCtx, startDrag, onHover, onHoverEnd, color, dispatch, onCardDragEnter, insertPoint, wrapStyle, tapSel, setTapSel }) {
   return (
     <div className="sim-market-section" style={{ flex:1, minHeight:0, overflow:'hidden', display:'flex', flexDirection:'column', ...wrapStyle }}>
       <div className="zone-label-right" style={{ color }}>
@@ -1571,6 +1653,7 @@ function MarketSection({ title, zone, cards, scale, dropZone, handlers, openCtx,
               onClick={e => openCtx(card, zone, e)}
               dispatch={dispatch}
               onDragEnterCard={onCardDragEnter}
+              tapSel={tapSel} setTapSel={setTapSel}
             />,
             after && <div key={`ins-a-${card._uid}`} className="insert-line"/>,
           ].filter(Boolean);
@@ -1581,7 +1664,7 @@ function MarketSection({ title, zone, cards, scale, dropZone, handlers, openCtx,
 }
 
 // ─── CLIENT WITH TALENTS ─────────────────────────────────────────────────────
-function ClientWithTalents({ card, scale, startDrag, openCtx, onHover, onHoverEnd, dropZone, handlers, dragType, dispatch, onCardDragEnter, insertPoint }) {
+function ClientWithTalents({ card, scale, startDrag, openCtx, onHover, onHoverEnd, dropZone, handlers, dragType, dispatch, onCardDragEnter, insertPoint, tapSel, setTapSel }) {
   const talentW = Math.round(220 * scale);
   const talentH = Math.round(308 * scale);
   const clientW = Math.round(390 * scale);
@@ -1612,7 +1695,8 @@ function ClientWithTalents({ card, scale, startDrag, openCtx, onHover, onHoverEn
       >
         <ScaledCard card={card} scale={scale} fromZone="mesa"
           onDragStart={startDrag} onHover={onHover} onHoverEnd={onHoverEnd}
-          onClick={e => openCtx(card, 'mesa', e)} dispatch={dispatch}/>
+          onClick={e => openCtx(card, 'mesa', e)} dispatch={dispatch}
+          tapSel={tapSel} setTapSel={setTapSel}/>
       </div>
       {/* Stacked assigned talents — each offset to the right showing the left resource strip */}
       {assigned.length > 0 && (
@@ -1626,7 +1710,8 @@ function ClientWithTalents({ card, scale, startDrag, openCtx, onHover, onHoverEn
                 <ScaledCard card={t} scale={scale} fromZone={assignedZone}
                   onDragStart={startDrag} onHover={onHover} onHoverEnd={onHoverEnd}
                   onClick={e => openCtx(t, assignedZone, e)}
-                  onDragEnterCard={onCardDragEnter}/>
+                  onDragEnterCard={onCardDragEnter}
+                  tapSel={tapSel} setTapSel={setTapSel}/>
               </div>
             );
           })}
@@ -1646,6 +1731,10 @@ function App() {
     marketSize, ctx, detail, log,
   } = state;
 
+  // ── Mission colors (reactive state — drives CSS + card inline styles) ──
+  const [missionColors, setMissionColors] = useState({...DEFAULT_MISSION_COLORS});
+  useEffect(() => { injectMissionCss(missionColors); }, [missionColors]);
+
   // ── Card Set Loader ──
   const loadSetRef = useRef(null);
   const [activeSetName, setActiveSetName] = useState('Default');
@@ -1657,13 +1746,16 @@ function App() {
       try {
         const data = JSON.parse(ev.target.result);
         _activeCardsData = data;
+        setMissionColors(data.mission_colors
+          ? {...DEFAULT_MISSION_COLORS, ...data.mission_colors}
+          : {...DEFAULT_MISSION_COLORS});
         setActiveSetName(file.name.replace(/\.json$/i,''));
         dispatch({ type:'RESET' });
       } catch(err) { alert('Error al cargar el set: '+err.message); }
     };
     reader.readAsText(file);
     e.target.value = '';
-  }, []);
+  }, [setMissionColors]);
 
   // ── Drag & Drop ──
   const dragRef  = useRef(null);
@@ -1675,6 +1767,13 @@ function App() {
   const setInsert = useCallback((v) => { insertRef.current = v; setInsertPoint(v); }, []);
   const isMobile = window.innerWidth < 1024;
   const [cardZoom, setCardZoom] = useState(isMobile ? 0.8 : 1.0);
+  const [tapSel, setTapSel] = useState(null); // { uid, zone } — mobile card selection
+  // Dismiss tap-selection when tapping outside a card
+  useEffect(() => {
+    const fn = (e) => { if (!e.target.closest('.card-scaled') && !e.target.closest('.ctx-trigger')) setTapSel(null); };
+    document.addEventListener('click', fn);
+    return () => document.removeEventListener('click', fn);
+  }, []);
   const [rightWidth, setRightWidth] = useState(isMobile ? 409 : 584);
   const isResizingRef = useRef(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -1846,6 +1945,7 @@ function App() {
   const mesaScale = cardScale;
 
   return (
+    <MissionColorsCtx.Provider value={missionColors}>
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden' }}>
 
       {/* ── STATUS BAR ── */}
@@ -1891,6 +1991,13 @@ function App() {
             zone="discard" dropZone={dropZone} handlers={handlers} startDrag={startDrag}/>
 
           <div style={{ flex:1 }}/>
+          <div style={{ fontSize:8, fontWeight:700, textTransform:'uppercase', letterSpacing:1, color:'#2a3050' }}>Reglas clave</div>
+          <div style={{ background:'#0d1019', borderRadius:6, padding:'5px 7px', fontSize:9, lineHeight:1.8, color:'#2d3450', marginBottom:6 }}>
+            <div>⬆️ Máx. <b style={{color:'#4f46e5'}}>1 nivel</b> por turno por cliente</div>
+            <div>💸 Talentos en juego cobran cada turno</div>
+            <div>✦ Mesa = −1 cultura · Match = +1</div>
+            <div>🌀 Híbrido reemplaza cualquier recurso salvo Manager</div>
+          </div>
           <div style={{ fontSize:8, fontWeight:700, textTransform:'uppercase', letterSpacing:1, color:'#2a3050' }}>Registro</div>
           <div style={{ background:'#0d1019', borderRadius:6, padding:'5px 7px', fontSize:9, lineHeight:1.75, maxHeight:120, overflowY:'auto' }}>
             {log.map((l, i) => <div key={i} style={{ color: i===0 ? '#94a3b8' : '#2d3450' }}>{l}</div>)}
@@ -1921,14 +2028,16 @@ function App() {
                       startDrag={startDrag} openCtx={openCtx}
                       onHover={onHover} onHoverEnd={onHoverEnd}
                       dropZone={dropZone} handlers={handlers} dragType={dragType} dispatch={dispatch}
-                      onCardDragEnter={onCardDragEnter} insertPoint={insertPoint}/>
+                      onCardDragEnter={onCardDragEnter} insertPoint={insertPoint}
+                      tapSel={tapSel} setTapSel={setTapSel}/>
                   </div>
                 : <div key={card._uid} style={{ position:'absolute', left: card._x ?? 20, top: card._y ?? 20 }}>
                     <ScaledCard card={card} scale={mesaScale}
                       fromZone="mesa" onDragStart={startDrag}
                       onHover={onHover} onHoverEnd={onHoverEnd}
                       onClick={e => openCtx(card, 'mesa', e)} dispatch={dispatch}
-                      onDragEnterCard={onCardDragEnter}/>
+                      onDragEnterCard={onCardDragEnter}
+                      tapSel={tapSel} setTapSel={setTapSel}/>
                   </div>
             ))}
           </div>
@@ -1957,7 +2066,8 @@ function App() {
                   fromZone="hand" onDragStart={startDrag}
                   onHover={onHover} onHoverEnd={onHoverEnd}
                   onClick={e => openCtx(card, 'hand', e)} dispatch={dispatch}
-                  onDragEnterCard={onCardDragEnter}/>,
+                  onDragEnterCard={onCardDragEnter}
+                  tapSel={tapSel} setTapSel={setTapSel}/>,
                 after && <div key={`ins-a-${card._uid}`} className="insert-line"/>,
               ].filter(Boolean);
             })}
@@ -1999,6 +2109,7 @@ function App() {
             dispatch={dispatch}
             onCardDragEnter={onCardDragEnter}
             insertPoint={insertPoint}
+            tapSel={tapSel} setTapSel={setTapSel}
           />
 
           <div className="mkt-divider"/>
@@ -2020,6 +2131,7 @@ function App() {
             onCardDragEnter={onCardDragEnter}
             insertPoint={insertPoint}
             wrapStyle={{ flex:'none', height:handHeight, minHeight:handHeight, maxHeight:handHeight }}
+            tapSel={tapSel} setTapSel={setTapSel}
           />
         </div>
       </div>
@@ -2028,6 +2140,7 @@ function App() {
       <CtxMenu ctx={ctx} dispatch={dispatch}/>
       <DetailOverlay card={detail} dispatch={dispatch}/>
     </div>
+    </MissionColorsCtx.Provider>
   );
 }
 
