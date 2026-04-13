@@ -227,7 +227,7 @@
 </script>
 <script type="text/babel">
 const { useState, useReducer, useCallback, useRef, useEffect } = React;
-const CARDS_DATA = {"clients":[{"id":"Cliente-3-001","type":"cliente","name":"Arte 1","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"creativo","qty":2},{"type":"analista","qty":1},{"type":"manager","qty":1},{"type":"manager","qty":1}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-002","type":"cliente","name":"Arte 2","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-003","type":"cliente","name":"Arte 3","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"creativo","qty":1},{"type":"desarrollo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-004","type":"cliente","name":"Deporte 1","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"analista","qty":2},{"type":"desarrollo","qty":1},{"type":"manager","qty":1},{"type":"manager","qty":1}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-005","type":"cliente","name":"Deporte 2","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-006","type":"cliente","name":"Deporte 3","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"analista","qty":1},{"type":"creativo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-007","type":"cliente","name":"Entretenimiento 1","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"desarrollo","qty":2},{"type":"creativo","qty":1},{"type":"manager","qty":1},{"type":"manager","qty":1}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-008","type":"cliente","name":"Entretenimiento 2","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-009","type":"cliente","name":"Entretenimiento 3","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"desarrollo","qty":1},{"type":"analista","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-010","type":"cliente","name":"Viajes 1","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"creativo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-011","type":"cliente","name":"Viajes 2","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"desarrollo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-012","type":"cliente","name":"Viajes 3","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"analista","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-013","type":"cliente","name":"Gastronomía 1","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-014","type":"cliente","name":"Gastronomía 2","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-015","type":"cliente","name":"Gastronomía 3","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]}],"talents":[{"id":"Talento-3-001","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-001.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-002","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-002.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-003","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-003.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-004","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-004.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-005","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-005.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-006","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-006.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-007","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-007.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-008","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-008.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-009","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-009.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-010","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-010.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-011","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-011.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-012","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-012.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-013","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-013.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-014","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-014.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-015","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-015.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-016","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-016.png","mision":"arte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-017","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-017.png","mision":"deporte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-018","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-018.png","mision":"entretenimiento","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-019","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-019.png","mision":"viajes","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-020","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-020.png","mision":"gastronomia","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-021","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-022","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-023","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-024","type":"talento","name":"AA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"analista","qty":2}],"effects":[]},{"id":"Talento-3-025","type":"talento","name":"CC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"creativo","qty":2}],"effects":[]},{"id":"Talento-3-026","type":"talento","name":"DD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":2}],"effects":[]},{"id":"Talento-3-027","type":"talento","name":"MA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-028","type":"talento","name":"MC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-029","type":"talento","name":"MD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"desarrollo","qty":1}],"effects":[]}],"investments":[{"id":"inv-3-001","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-002","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-003","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-004","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"inv-3-005","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"Inv-3-006","type":"inversion","name":"Extra Card 1","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Roba 1 carta adicional al inicio de tu turno"}]},{"id":"Inv-3-006","type":"inversion","name":"Hand Size 1","flavorText":"","artDescription":"","artImage":null,"cost":5,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Puedes tener hasta 6 cartas en la mano"}]}],"strategies":[{"id":"estrategia-3-001","type":"estrategia","name":"Card Draw 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba dos cartas"}]},{"id":"estrategia-3-002","type":"estrategia","name":"Card Draw 3","flavorText":"","artDescription":"","artImage":null,"cost":7,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba 3 cartas"}]},{"id":"estrategia-3-003","type":"estrategia","name":"Destroy","flavorText":"","artDescription":"","artImage":null,"cost":10,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Mueve una carta del campo de juego de un oponente al descarte"}]},{"id":"estrategia-3-004","type":"estrategia","name":"Steal Talent","flavorText":"","artDescription":"","artImage":null,"cost":12,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Intercambia el control de un talento en tu zona de juego por un talento en la zona de juego de un oponente"}]}],"urgent_actions":[{"id":"urgent-3-001","type":"accion_urgente","name":"Card Cycle 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Mueve una carta del mercado al descarte"}]},{"id":"urgent-3-002","type":"accion_urgente","name":"Card Swap 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Intercambia una carta de tu mano por una carta del mercado"}]},{"id":"urgent-3-003","type":"accion_urgente","name":"Counter 1","flavorText":"","artDescription":"","artImage":null,"cost":3,"bgColor":"#3D1515","effects":[{"description":"Cancela el efecto de una carta de Estrategia o de Acción Urgente."}]},{"id":"urgent-3-004","type":"accion_urgente","name":"Card Cycle 2","flavorText":"","artDescription":"","artImage":null,"cost":4,"bgColor":"#3D1515","effects":[{"description":"Mueve dos cartas del mercado al descarte"}]},{"id":"urgent-3-005","type":"accion_urgente","name":"Card Swap 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"bgColor":"#3D1515","effects":[{"description":"Intercambia dos cartas de tu mano por dos cartas en el Mercado"}]}],"mission_colors":{"arte":"#9770e1","deporte":"#88ebf2","entretenimiento":"#BE4486","finanzas":"#9D846B","gastronomia":"#f2ca02","naturaleza":"#43E95A","retail":"#a77b93","tecnologia":"#6638B8","viajes":"#8c4026"}};
+const CARDS_DATA = {"clients":[{"id":"Cliente-3-001","type":"cliente","name":"Arte 1","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"creativo","qty":2},{"type":"analista","qty":1},{"type":"manager","qty":2}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-002","type":"cliente","name":"Arte 2","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":2},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-003","type":"cliente","name":"Arte 3","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":2},{"type":"desarrollo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-004","type":"cliente","name":"Deporte 1","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"analista","qty":2},{"type":"desarrollo","qty":1},{"type":"manager","qty":2}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-005","type":"cliente","name":"Deporte 2","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":2},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-006","type":"cliente","name":"Deporte 3","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":2},{"type":"creativo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-007","type":"cliente","name":"Entretenimiento 1","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"desarrollo","qty":2},{"type":"creativo","qty":1},{"type":"manager","qty":1},{"type":"manager","qty":1}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-008","type":"cliente","name":"Entretenimiento 2","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-009","type":"cliente","name":"Entretenimiento 3","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":2},{"type":"analista","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-010","type":"cliente","name":"Viajes 1","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"creativo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-011","type":"cliente","name":"Viajes 2","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"desarrollo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-012","type":"cliente","name":"Viajes 3","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"analista","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-013","type":"cliente","name":"Gastronomía 1","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-014","type":"cliente","name":"Gastronomía 2","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-015","type":"cliente","name":"Gastronomía 3","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]}],"talents":[{"id":"Talento-3-001","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-001.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-002","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-002.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-003","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-003.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-004","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-004.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-005","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-005.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-006","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-006.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-007","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-007.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-008","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-008.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-009","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-009.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-010","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-010.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-011","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-011.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-012","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-012.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-013","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-013.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-014","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-014.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-015","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-015.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-016","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-016.png","mision":"arte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-017","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-017.png","mision":"deporte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-018","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-018.png","mision":"entretenimiento","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-019","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-019.png","mision":"viajes","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-020","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-020.png","mision":"gastronomia","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-021","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-022","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-023","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-024","type":"talento","name":"AA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"analista","qty":2}],"effects":[]},{"id":"Talento-3-025","type":"talento","name":"CC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"creativo","qty":2}],"effects":[]},{"id":"Talento-3-026","type":"talento","name":"DD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":2}],"effects":[]},{"id":"Talento-3-027","type":"talento","name":"MA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-028","type":"talento","name":"MC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-029","type":"talento","name":"MD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"desarrollo","qty":1}],"effects":[]}],"investments":[{"id":"inv-3-001","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-002","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-003","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-004","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"inv-3-005","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"Inv-3-006","type":"inversion","name":"Extra Card 1","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Roba 1 carta adicional al inicio de tu turno"}]},{"id":"Inv-3-006","type":"inversion","name":"Hand Size 1","flavorText":"","artDescription":"","artImage":null,"cost":5,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Puedes tener hasta 6 cartas en la mano"}]}],"strategies":[{"id":"estrategia-3-001","type":"estrategia","name":"Card Draw 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba dos cartas"}]},{"id":"estrategia-3-002","type":"estrategia","name":"Card Draw 3","flavorText":"","artDescription":"","artImage":null,"cost":7,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba 3 cartas"}]},{"id":"estrategia-3-003","type":"estrategia","name":"Destroy","flavorText":"","artDescription":"","artImage":null,"cost":10,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Mueve una carta del campo de juego de un oponente al descarte"}]},{"id":"estrategia-3-004","type":"estrategia","name":"Steal Talent","flavorText":"","artDescription":"","artImage":null,"cost":12,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Intercambia el control de un talento en tu zona de juego por un talento en la zona de juego de un oponente"}]}],"urgent_actions":[{"id":"urgent-3-001","type":"accion_urgente","name":"Card Cycle 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Mueve una carta del mercado al descarte"}]},{"id":"urgent-3-002","type":"accion_urgente","name":"Card Swap 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Intercambia una carta de tu mano por una carta del mercado"}]},{"id":"urgent-3-003","type":"accion_urgente","name":"Counter 1","flavorText":"","artDescription":"","artImage":null,"cost":3,"bgColor":"#3D1515","effects":[{"description":"Cancela el efecto de una carta de Estrategia o de Acción Urgente."}]},{"id":"urgent-3-004","type":"accion_urgente","name":"Card Cycle 2","flavorText":"","artDescription":"","artImage":null,"cost":4,"bgColor":"#3D1515","effects":[{"description":"Mueve dos cartas del mercado al descarte"}]},{"id":"urgent-3-005","type":"accion_urgente","name":"Card Swap 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"bgColor":"#3D1515","effects":[{"description":"Intercambia dos cartas de tu mano por dos cartas en el Mercado"}]}],"mission_colors":{"arte":"#9770e1","deporte":"#88ebf2","entretenimiento":"#BE4486","finanzas":"#9D846B","gastronomia":"#f2ca02","naturaleza":"#43E95A","retail":"#a77b93","tecnologia":"#6638B8","viajes":"#8c4026"}};
 const RESOURCE_COLORS = {
   creativo:   '#DE6834',
   desarrollo: '#73C76C',
@@ -505,9 +505,9 @@ const MISSION_COLOR_MAP = {
 };
 
 const DEFAULT_MISSION_COLORS = {
-  arte:'#A88ED8', deporte:'#C6CFE8', entretenimiento:'#F0D498',
-  finanzas:'#9D846B', gastronomia:'#F15F02', naturaleza:'#43E95A',
-  retail:'#BE4486', tecnologia:'#6638B8', viajes:'#72B3F5',
+  arte:'#9770e1', deporte:'#88ebf2', entretenimiento:'#BE4486',
+  finanzas:'#9D846B', gastronomia:'#f2ca02', naturaleza:'#43E95A',
+  retail:'#a77b93', tecnologia:'#6638B8', viajes:'#8c4026',
 };
 const MISSIONS_LIST = ['arte','deporte','entretenimiento','finanzas','gastronomia','naturaleza','retail','tecnologia','viajes'];
 function _hexToRgb(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
@@ -919,14 +919,14 @@ function buildMain() {
 }
 function buildClients() { return shuffle((getCardsData().clients||[]).map(mkUid)); }
 
-function createInitialState(ms = 4, numPlayers = 1) {
+function createInitialState(ms = 4, numPlayers = 1, aiConfig = []) {
   const main    = buildMain();
   const clients = buildClients();
   const HAND = 4;
   const totalHandCards = HAND * numPlayers;
   const players = Array.from({ length: numPlayers }, (_, i) => ({
     name: `Jugador ${i + 1}`,
-    isAI: false,
+    isAI: aiConfig[i] || false,
     hand: main.slice(i * HAND, (i + 1) * HAND),
     mesa: [],
     money: 4,
@@ -944,8 +944,11 @@ function createInitialState(ms = 4, numPlayers = 1) {
     discard:      [],
     mainMarket:   main.slice(totalHandCards, totalHandCards + ms),
     clientMarket: clients.slice(0, ms),
-    ctx:   null,
-    detail:null,
+    ctx:        null,
+    detail:     null,
+    finalRound: false,
+    gameOver:   false,
+    winners:    null,
     log: ['🎮 Juego iniciado — Turno 0'],
   };
 }
@@ -962,14 +965,18 @@ function sumResources(talents) {
 }
 function satisfies(pool, reqs) {
   if (!reqs || reqs.length === 0) return true;
-  let hybridLeft = pool['hibrido'] || 0;
+  // Work on a copy so each requirement consumes from the running pool.
+  // Without this, two requirements of the same type (e.g. [{manager:1},{manager:1}])
+  // would both pass against a pool that only has 1 manager.
+  const running = { ...pool };
+  let hybridLeft = running['hibrido'] || 0;
   return reqs.every(req => {
-    const have = pool[req.type] || 0;
+    const have = running[req.type] || 0;
     const need = req.qty || 1;
-    if (have >= need) return true;
+    if (have >= need) { running[req.type] = have - need; return true; }
     if (req.type === 'manager') return false;
     const gap = need - have;
-    if (hybridLeft >= gap) { hybridLeft -= gap; return true; }
+    if (hybridLeft >= gap) { running[req.type] = 0; hybridLeft -= gap; return true; }
     return false;
   });
 }
@@ -1048,16 +1055,20 @@ function refillMarkets(s) {
 function aiSatisfyReqs(reqs, existingPool, pool, clientMission) {
   if (!reqs || reqs.length === 0) return [];
 
-  // Mirror of satisfies() — used to verify a resource map actually meets reqs
+  // Mirror of satisfies() — used to verify a resource map actually meets reqs.
+  // Works on a FRESH COPY of `running` so each requirement properly consumes
+  // from the pool. Without this, [{manager:1},{manager:1}] would pass with
+  // just 1 manager because both checks would see manager=1 unreduced.
   function checkSatisfied(running) {
-    let hybridLeft = running['hibrido'] || 0;
+    const r = { ...running };
+    let hybridLeft = r['hibrido'] || 0;
     return reqs.every(req => {
-      const have = running[req.type] || 0;
+      const have = r[req.type] || 0;
       const need = req.qty || 1;
-      if (have >= need) return true;
+      if (have >= need) { r[req.type] = have - need; return true; }
       if (req.type === 'manager') return false; // hybrids can't fill manager
       const gap = need - have;
-      if (hybridLeft >= gap) { hybridLeft -= gap; return true; }
+      if (hybridLeft >= gap) { r[req.type] = 0; hybridLeft -= gap; return true; }
       return false;
     });
   }
@@ -1075,13 +1086,17 @@ function aiSatisfyReqs(reqs, existingPool, pool, clientMission) {
   const chosen = [];
   const running = { ...existingPool };
 
+  // Pre-compute total needed per resource type (summing ALL requirements of the same type).
+  // e.g. [{manager:1},{manager:1}] → totalNeeded['manager'] = 2
+  const totalNeeded = {};
+  reqs.forEach(req => { totalNeeded[req.type] = (totalNeeded[req.type] || 0) + (req.qty || 1); });
+
   // Pass 1: pick typed (non-hybrid) talents that fill a specific unmet requirement
   for (const talent of sorted) {
     if (checkSatisfied({ ...running })) break;
     const fillsGap = (talent.resources || []).some(r => {
       if (r.type === 'hibrido') return false;
-      const req = reqs.find(x => x.type === r.type);
-      return req && (running[r.type] || 0) < (req.qty || 1);
+      return totalNeeded[r.type] && (running[r.type] || 0) < totalNeeded[r.type];
     });
     if (!fillsGap) continue;
     chosen.push(talent);
@@ -1230,6 +1245,10 @@ function aiPlanTurn(s) {
 
     if (!bestPlan) continue;
 
+    // Skip no-op plans: nothing to assign and no level change.
+    // Fee is collected automatically by END_TURN regardless — no action needed.
+    if (bestPlan.chosen.length === 0 && bestPlan.level === (client.currentLevel || 1)) continue;
+
     // Commit plan — mark its talents as used so later clients can't take them
     selected.push(bestPlan);
     bestPlan.chosen.forEach(t => {
@@ -1329,8 +1348,8 @@ function aiExecutePlan(s, plans) {
 
 // Full AI turn: plan → execute → end turn
 function aiTakeTurn(state) {
-  // Turn 0 is setup — no actions, just pass
-  if (state.turn === 0) {
+  // Turn 0 is setup, final round has no plays — just pass in both cases
+  if (state.turn === 0 || state.finalRound) {
     return reducer(state, { type: 'END_TURN' });
   }
 
@@ -1348,6 +1367,31 @@ function aiTakeTurn(state) {
   let result = unFlatP(s, state);
   result = addLog(`🤖 ${state.players[state.activePlayer].name} terminó su turno`, result);
   return reducer(result, { type: 'END_TURN' });
+}
+
+// ─── GAME OVER ───────────────────────────────────────────────────────────────
+const LAST_REGULAR_TURN = 7;
+
+// Determine winner(s) from the final players array.
+// Tiebreakers: money → cultura → talents on mesa → draw
+function computeWinners(players) {
+  let candidates = players.map((p, i) => ({
+    idx: i,
+    money:   p.money   || 0,
+    cultura: p.cultura || 0,
+    talents: (p.mesa || []).filter(c => c.type === 'talento').length,
+  }));
+
+  const best = key => Math.max(...candidates.map(c => c[key]));
+
+  candidates = candidates.filter(c => c.money   === best('money'));
+  if (candidates.length === 1) return candidates.map(c => c.idx);
+
+  candidates = candidates.filter(c => c.cultura === best('cultura'));
+  if (candidates.length === 1) return candidates.map(c => c.idx);
+
+  candidates = candidates.filter(c => c.talents === best('talents'));
+  return candidates.map(c => c.idx); // 1 winner or true draw
 }
 
 // ─── REDUCER ─────────────────────────────────────────────────────────────────
@@ -1560,7 +1604,31 @@ function reducer(state, action) {
       }
 
       // ── 5. End-of-turn / round handling ─────────────────────────────────────
-      // nextPlayer cycles: 0→1→2→…→0. When it wraps back to 0, a full round ended.
+
+      // ── 5a. FINAL ROUND branch ──────────────────────────────────────────────
+      if (state.finalRound) {
+        const nextFinal  = (state.activePlayer + 1) % state.numPlayers;
+        const allDone    = nextFinal === 0; // wrapped back → every player has gone
+
+        if (allDone) {
+          // All players finished the final round → determine winner(s)
+          const finalState = unFlatP(s, state);
+          const winnerIdxs = computeWinners(finalState.players);
+          const winnerNames = winnerIdxs.map(i => finalState.players[i].name);
+          const logMsg = winnerIdxs.length === 1
+            ? `🏆 ¡${winnerNames[0]} gana el juego!`
+            : `🤝 ¡Empate entre ${winnerNames.join(' y ')}!`;
+          return addLog(logMsg, { ...finalState, gameOver: true, winners: winnerIdxs });
+        }
+
+        // Advance to next player's final round turn (no cards, no clients)
+        let result = unFlatP(s, state);
+        result = { ...result, activePlayer: nextFinal };
+        result = addLog(`👤 Ronda Final — turno de ${result.players[nextFinal].name}`, result);
+        return result;
+      }
+
+      // ── 5b. Normal turn handling ─────────────────────────────────────────────
       const nextPlayer  = (state.activePlayer + 1) % state.numPlayers;
       const isNewRound  = nextPlayer === 0;
       const newTurn     = isNewRound ? state.turn + 1 : state.turn;
@@ -1575,11 +1643,14 @@ function reducer(state, action) {
         result = addLog(`👤 Turno de ${result.players[nextPlayer].name}`, result);
       }
 
+      // ── 5c. Check if turn 7 just completed → enter final round ──────────────
+      if (isNewRound && state.turn === LAST_REGULAR_TURN) {
+        result = addLog('🔔 ¡Turno 7 completado! Comienza la Ronda Final. Solo se cobran fees.', result);
+        return { ...result, finalRound: true };
+        // No card draw, no new clients — final round starts immediately
+      }
+
       // ── 6 & 7. Deal card + client to the NEXT player (skipped during turn 0) ──
-      // Both go to the *next* player after the switch so they're already there
-      // when that player sees their board. newTurn (not state.turn) is the right
-      // gate: when the last player ends turn 0, newTurn is 1 and the next player
-      // deserves their starting card and client for turn 1.
       if (newTurn > 0) {
         // 6. Draw one card from main deck for the next player
         if (result.mainDeck.length > 0) {
@@ -1657,7 +1728,7 @@ function reducer(state, action) {
     case 'SHUFFLE_CLIENT': return addLog('🔀 Mazo clientes mezclado',   { ...state, clientDeck: shuffle(state.clientDeck) });
     case 'CTX':    return { ...state, ctx: action.v, detail: null };
     case 'DETAIL': return { ...state, detail: action.card, ctx: null };
-    case 'RESET':  _uid = 0; return createInitialState(state.marketSize, state.numPlayers);
+    case 'RESET': { _uid = 0; const aiCfg = state.players.map(p => p.isAI); return createInitialState(state.marketSize, state.numPlayers, aiCfg); }
     case 'SET_NUM_PLAYERS': _uid = 0; return createInitialState(state.marketSize, Math.max(1, Math.min(4, action.n)));
     case 'SET_PLAYER_TYPE': {
       const players = state.players.map((p, i) => i === action.idx ? { ...p, isAI: action.isAI } : p);
@@ -2307,13 +2378,108 @@ function App() {
   const handScale = cardScale;
   const mesaScale = cardScale;
 
+  // ── Game-over data ──
+  const { finalRound, gameOver, winners } = state;
+
   return (
     <MissionColorsCtx.Provider value={missionColors}>
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden' }}>
 
+      {/* ── GAME OVER MODAL ── */}
+      {gameOver && winners && (
+        <div style={{
+          position:'fixed', inset:0, zIndex:9999,
+          background:'rgba(0,0,0,0.75)', backdropFilter:'blur(6px)',
+          display:'flex', alignItems:'center', justifyContent:'center',
+        }}>
+          <div style={{
+            background:'linear-gradient(145deg,#1a1d27,#0f1118)',
+            border:'1px solid #2d3347', borderRadius:20,
+            padding:'40px 52px', maxWidth:520, width:'90%',
+            textAlign:'center', boxShadow:'0 24px 80px rgba(0,0,0,0.7)',
+          }}>
+            {/* Trophy / draw icon */}
+            <div style={{ fontSize:60, marginBottom:12 }}>
+              {winners.length === 1 ? '🏆' : '🤝'}
+            </div>
+
+            {winners.length === 1 ? (
+              <>
+                <div style={{ fontSize:13, fontWeight:700, letterSpacing:3, textTransform:'uppercase', color:'#64748b', marginBottom:8 }}>Ganador</div>
+                <div style={{ fontSize:32, fontWeight:900, color: PLAYER_COLORS[winners[0]], marginBottom:20 }}>
+                  {state.players[winners[0]].name}
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize:13, fontWeight:700, letterSpacing:3, textTransform:'uppercase', color:'#64748b', marginBottom:8 }}>Empate</div>
+                <div style={{ display:'flex', justifyContent:'center', gap:12, flexWrap:'wrap', marginBottom:20 }}>
+                  {winners.map(i => (
+                    <span key={i} style={{ fontSize:24, fontWeight:800, color: PLAYER_COLORS[i] }}>
+                      {state.players[i].name}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* Final scoreboard */}
+            <div style={{ background:'#0d0f18', borderRadius:12, padding:'16px 20px', marginBottom:24 }}>
+              {state.players
+                .map((p, i) => ({ ...p, i }))
+                .sort((a, b) => (b.money - a.money) || (b.cultura - a.cultura))
+                .map(p => {
+                  const isWinner = winners.includes(p.i);
+                  return (
+                    <div key={p.i} style={{
+                      display:'flex', alignItems:'center', gap:10, padding:'6px 0',
+                      borderBottom:'1px solid #1e2235',
+                      opacity: isWinner ? 1 : 0.6,
+                    }}>
+                      <div style={{ width:8, height:8, borderRadius:'50%', background: PLAYER_COLORS[p.i], flexShrink:0 }}/>
+                      <span style={{ flex:1, textAlign:'left', fontWeight:700, color: PLAYER_COLORS[p.i], fontSize:13 }}>{p.name}</span>
+                      <span style={{ fontSize:12, color:'#fbbf24' }}>💰 {p.money}K</span>
+                      <span style={{ fontSize:12, color:'#a78bfa' }}>✦ {p.cultura}</span>
+                      <span style={{ fontSize:12, color:'#64748b' }}>🎴 {(p.mesa||[]).filter(c=>c.type==='talento').length}</span>
+                    </div>
+                  );
+                })}
+            </div>
+
+            <button
+              onClick={() => dispatch({ type:'RESET' })}
+              style={{
+                background:'linear-gradient(135deg,#4f46e5,#7c3aed)',
+                border:'none', borderRadius:10, padding:'12px 32px',
+                color:'#fff', fontWeight:700, fontSize:15, cursor:'pointer',
+                boxShadow:'0 4px 20px rgba(124,58,237,0.4)',
+              }}>
+              Nueva Partida
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── FINAL ROUND BANNER ── */}
+      {finalRound && !gameOver && (
+        <div style={{
+          background:'linear-gradient(90deg,#7c3aed22,#7c3aed44,#7c3aed22)',
+          borderBottom:'1px solid #7c3aed66',
+          textAlign:'center', padding:'4px 0', fontSize:12, fontWeight:700,
+          color:'#a78bfa', letterSpacing:2, textTransform:'uppercase',
+          flexShrink:0,
+        }}>
+          🔔 Ronda Final — Solo cobro de fees
+        </div>
+      )}
+
       {/* ── STATUS BAR ── */}
       <div className="sim-statusbar">
-        <div className="turn-badge">Turno <span className="turn-number">{turn}</span></div>
+        <div className="turn-badge">
+          {finalRound
+            ? <span style={{ color:'#a78bfa' }}>Ronda Final</span>
+            : <>Turno <span className="turn-number">{turn}</span></>}
+        </div>
 
         {/* Per-player stats strip — one chip per player */}
         {state.players.map((p, i) => {
@@ -2368,7 +2534,12 @@ function App() {
           📂 <span style={{maxWidth:90,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',display:'inline-block',verticalAlign:'middle'}}>{activeSetName}</span>
         </button>
         <input ref={loadSetRef} type="file" accept=".json" style={{display:'none'}} onChange={handleLoadSet}/>
-        <button className="end-turn-btn" onClick={() => dispatch({ type:'END_TURN' })}>Fin de Turno ⏭</button>
+        <button className="end-turn-btn"
+          disabled={gameOver}
+          onClick={() => dispatch({ type:'END_TURN' })}
+          style={{ opacity: gameOver ? 0.35 : 1 }}>
+          {finalRound ? 'Cobrar Fees ⏭' : 'Fin de Turno ⏭'}
+        </button>
 
         {/* Player count selector — right side */}
         <div style={{ display:'flex', alignItems:'center', gap:3, background:'#1a1d27', border:'1px solid #2d3347', borderRadius:8, padding:'4px 8px', flexShrink:0, marginLeft:'auto' }}>
