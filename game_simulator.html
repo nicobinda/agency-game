@@ -227,7 +227,7 @@
 </script>
 <script type="text/babel">
 const { useState, useReducer, useCallback, useRef, useEffect } = React;
-const CARDS_DATA = {"clients":[{"id":"Cliente-3-001","type":"cliente","name":"Arte 1","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null},{"level":3,"requirements":[{"type":"creativo","qty":2},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-002","type":"cliente","name":"Arte 2","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null}]},{"id":"Cliente-3-003","type":"cliente","name":"Arte 3","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"desarrollo","qty":1}],"fee":5,"cultureRequirement":null}]},{"id":"Cliente-3-004","type":"cliente","name":"Deporte 1","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null},{"level":3,"requirements":[{"type":"analista","qty":2},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-005","type":"cliente","name":"Deporte 2","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null}]},{"id":"Cliente-3-006","type":"cliente","name":"Deporte 3","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"creativo","qty":1}],"fee":5,"cultureRequirement":null}]},{"id":"Cliente-3-007","type":"cliente","name":"Entretenimiento 1","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null},{"level":3,"requirements":[{"type":"desarrollo","qty":2},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-008","type":"cliente","name":"Entretenimiento 2","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":7,"cultureRequirement":null}]},{"id":"Cliente-3-009","type":"cliente","name":"Entretenimiento 3","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"analista","qty":1}],"fee":5,"cultureRequirement":null}]},{"id":"Cliente-3-010","type":"cliente","name":"Viajes 1","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1}],"fee":6,"cultureRequirement":null}]},{"id":"Cliente-3-011","type":"cliente","name":"Viajes 2","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1}],"fee":6,"cultureRequirement":null}]},{"id":"Cliente-3-012","type":"cliente","name":"Viajes 3","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1}],"fee":6,"cultureRequirement":null}]},{"id":"Cliente-3-013","type":"cliente","name":"Gastronomía 1","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":2}],"fee":5,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-014","type":"cliente","name":"Gastronomía 2","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":2}],"fee":5,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-015","type":"cliente","name":"Gastronomía 3","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":2}],"fee":5,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]}],"talents":[{"id":"Talento-3-001","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-002","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-003","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-004","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-005","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-006","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-007","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-008","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-009","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-010","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-011","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-012","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-013","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-014","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-015","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-016","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-017","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-018","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-019","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":null,"mision":"viaje","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-020","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-021","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-022","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-023","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-024","type":"talento","name":"AA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"analista","qty":2}],"effects":[]},{"id":"Talento-3-025","type":"talento","name":"CC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"creativo","qty":2}],"effects":[]},{"id":"Talento-3-026","type":"talento","name":"DD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":2}],"effects":[]},{"id":"Talento-3-027","type":"talento","name":"MA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-028","type":"talento","name":"MC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-029","type":"talento","name":"MD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"desarrollo","qty":1}],"effects":[]}],"investments":[{"id":"inv-3-001","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-002","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-003","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-004","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"inv-3-005","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"Inv-3-006","type":"inversion","name":"Extra Card 1","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Roba 1 carta adicional al inicio de tu turno"}]},{"id":"Inv-3-006","type":"inversion","name":"Hand Size 1","flavorText":"","artDescription":"","artImage":null,"cost":5,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Puedes tener hasta 6 cartas en la mano"}]}],"strategies":[{"id":"estrategia-3-001","type":"estrategia","name":"Card Draw 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba dos cartas"}]},{"id":"estrategia-3-002","type":"estrategia","name":"Card Draw 3","flavorText":"","artDescription":"","artImage":null,"cost":7,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba 3 cartas"}]},{"id":"estrategia-3-003","type":"estrategia","name":"Destroy","flavorText":"","artDescription":"","artImage":null,"cost":10,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Mueve una carta del campo de juego de un oponente al descarte"}]},{"id":"estrategia-3-004","type":"estrategia","name":"Steal Talent","flavorText":"","artDescription":"","artImage":null,"cost":12,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Intercambia el control de un talento en tu zona de juego por un talento en la zona de juego de un oponente"}]}],"urgent_actions":[{"id":"urgent-3-001","type":"accion_urgente","name":"Card Cycle 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Mueve una carta del mercado al descarte"}]},{"id":"urgent-3-002","type":"accion_urgente","name":"Card Swap 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Intercambia una carta de tu mano por una carta del mercado"}]},{"id":"urgent-3-003","type":"accion_urgente","name":"Counter 1","flavorText":"","artDescription":"","artImage":null,"cost":3,"bgColor":"#3D1515","effects":[{"description":"Cancela el efecto de una carta de Estrategia o de Acción Urgente."}]},{"id":"urgent-3-004","type":"accion_urgente","name":"Card Cycle 2","flavorText":"","artDescription":"","artImage":null,"cost":4,"bgColor":"#3D1515","effects":[{"description":"Mueve dos cartas del mercado al descarte"}]},{"id":"urgent-3-005","type":"accion_urgente","name":"Card Swap 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"bgColor":"#3D1515","effects":[{"description":"Intercambia dos cartas de tu mano por dos cartas en el Mercado"}]}]};
+const CARDS_DATA = {"clients":[{"id":"Cliente-3-001","type":"cliente","name":"Arte 1","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"creativo","qty":2},{"type":"analista","qty":1},{"type":"manager","qty":1},{"type":"manager","qty":1}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-002","type":"cliente","name":"Arte 2","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-003","type":"cliente","name":"Arte 3","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"creativo","qty":1},{"type":"desarrollo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-004","type":"cliente","name":"Deporte 1","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"analista","qty":2},{"type":"desarrollo","qty":1},{"type":"manager","qty":1},{"type":"manager","qty":1}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-005","type":"cliente","name":"Deporte 2","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-006","type":"cliente","name":"Deporte 3","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"analista","qty":1},{"type":"creativo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-007","type":"cliente","name":"Entretenimiento 1","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"desarrollo","qty":2},{"type":"creativo","qty":1},{"type":"manager","qty":1},{"type":"manager","qty":1}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-008","type":"cliente","name":"Entretenimiento 2","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-009","type":"cliente","name":"Entretenimiento 3","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"desarrollo","qty":1},{"type":"analista","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-010","type":"cliente","name":"Viajes 1","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"creativo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-011","type":"cliente","name":"Viajes 2","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"desarrollo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-012","type":"cliente","name":"Viajes 3","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"analista","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-013","type":"cliente","name":"Gastronomía 1","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-014","type":"cliente","name":"Gastronomía 2","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-015","type":"cliente","name":"Gastronomía 3","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]}],"talents":[{"id":"Talento-3-001","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-001.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-002","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-002.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-003","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-003.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-004","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-004.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-005","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-005.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-006","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-006.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-007","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-007.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-008","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-008.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-009","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-009.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-010","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-010.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-011","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-011.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-012","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-012.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-013","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-013.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-014","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-014.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-015","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-015.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-016","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-016.png","mision":"arte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-017","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-017.png","mision":"deporte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-018","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-018.png","mision":"entretenimiento","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-019","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-019.png","mision":"viajes","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-020","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-020.png","mision":"gastronomia","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-021","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-022","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-023","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-024","type":"talento","name":"AA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"analista","qty":2}],"effects":[]},{"id":"Talento-3-025","type":"talento","name":"CC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"creativo","qty":2}],"effects":[]},{"id":"Talento-3-026","type":"talento","name":"DD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":2}],"effects":[]},{"id":"Talento-3-027","type":"talento","name":"MA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-028","type":"talento","name":"MC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-029","type":"talento","name":"MD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"desarrollo","qty":1}],"effects":[]}],"investments":[{"id":"inv-3-001","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-002","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-003","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-004","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"inv-3-005","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"Inv-3-006","type":"inversion","name":"Extra Card 1","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Roba 1 carta adicional al inicio de tu turno"}]},{"id":"Inv-3-006","type":"inversion","name":"Hand Size 1","flavorText":"","artDescription":"","artImage":null,"cost":5,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Puedes tener hasta 6 cartas en la mano"}]}],"strategies":[{"id":"estrategia-3-001","type":"estrategia","name":"Card Draw 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba dos cartas"}]},{"id":"estrategia-3-002","type":"estrategia","name":"Card Draw 3","flavorText":"","artDescription":"","artImage":null,"cost":7,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba 3 cartas"}]},{"id":"estrategia-3-003","type":"estrategia","name":"Destroy","flavorText":"","artDescription":"","artImage":null,"cost":10,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Mueve una carta del campo de juego de un oponente al descarte"}]},{"id":"estrategia-3-004","type":"estrategia","name":"Steal Talent","flavorText":"","artDescription":"","artImage":null,"cost":12,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Intercambia el control de un talento en tu zona de juego por un talento en la zona de juego de un oponente"}]}],"urgent_actions":[{"id":"urgent-3-001","type":"accion_urgente","name":"Card Cycle 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Mueve una carta del mercado al descarte"}]},{"id":"urgent-3-002","type":"accion_urgente","name":"Card Swap 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Intercambia una carta de tu mano por una carta del mercado"}]},{"id":"urgent-3-003","type":"accion_urgente","name":"Counter 1","flavorText":"","artDescription":"","artImage":null,"cost":3,"bgColor":"#3D1515","effects":[{"description":"Cancela el efecto de una carta de Estrategia o de Acción Urgente."}]},{"id":"urgent-3-004","type":"accion_urgente","name":"Card Cycle 2","flavorText":"","artDescription":"","artImage":null,"cost":4,"bgColor":"#3D1515","effects":[{"description":"Mueve dos cartas del mercado al descarte"}]},{"id":"urgent-3-005","type":"accion_urgente","name":"Card Swap 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"bgColor":"#3D1515","effects":[{"description":"Intercambia dos cartas de tu mano por dos cartas en el Mercado"}]}],"mission_colors":{"arte":"#9770e1","deporte":"#88ebf2","entretenimiento":"#BE4486","finanzas":"#9D846B","gastronomia":"#f2ca02","naturaleza":"#43E95A","retail":"#a77b93","tecnologia":"#6638B8","viajes":"#8c4026"}};
 const RESOURCE_COLORS = {
   creativo:   '#DE6834',
   desarrollo: '#73C76C',
@@ -926,6 +926,7 @@ function createInitialState(ms = 4, numPlayers = 1) {
   const totalHandCards = HAND * numPlayers;
   const players = Array.from({ length: numPlayers }, (_, i) => ({
     name: `Jugador ${i + 1}`,
+    isAI: false,
     hand: main.slice(i * HAND, (i + 1) * HAND),
     mesa: [],
     money: 4,
@@ -948,6 +949,31 @@ function createInitialState(ms = 4, numPlayers = 1) {
     log: ['🎮 Juego iniciado — Turno 0'],
   };
 }
+
+// ─── SHARED GAME HELPERS ─────────────────────────────────────────────────────
+function sumResources(talents) {
+  const pool = {};
+  (talents || []).forEach(tk => {
+    (tk.resources || []).forEach(r => {
+      pool[r.type] = (pool[r.type] || 0) + (r.qty || 1);
+    });
+  });
+  return pool;
+}
+function satisfies(pool, reqs) {
+  if (!reqs || reqs.length === 0) return true;
+  let hybridLeft = pool['hibrido'] || 0;
+  return reqs.every(req => {
+    const have = pool[req.type] || 0;
+    const need = req.qty || 1;
+    if (have >= need) return true;
+    if (req.type === 'manager') return false;
+    const gap = need - have;
+    if (hybridLeft >= gap) { hybridLeft -= gap; return true; }
+    return false;
+  });
+}
+function getLvl(client, lvl) { return (client.levels || []).find(l => l.level === lvl) || null; }
 
 // ── Flatten active player's fields into state root (for reducer backward-compat) ──
 function flatP(state) {
@@ -1009,6 +1035,319 @@ function refillMarkets(s) {
     ns = { ...ns, mainMarket: [...ns.mainMarket, r], mainDeck: rd };
   }
   return ns;
+}
+
+// ─── AI ENGINE ───────────────────────────────────────────────────────────────
+
+// Find the minimal set of talents from `pool` that satisfies remaining resource gaps
+// after `existingPool` has already been committed. Returns chosen talent objects or null
+// if requirements cannot be met. Hybrids act as wildcards (except for manager slots).
+//
+// IMPORTANT: uses the exact same hybrid-consumption logic as satisfies() so that
+// any plan we generate is guaranteed to pass the END_TURN satisfies() check.
+function aiSatisfyReqs(reqs, existingPool, pool, clientMission) {
+  if (!reqs || reqs.length === 0) return [];
+
+  // Mirror of satisfies() — used to verify a resource map actually meets reqs
+  function checkSatisfied(running) {
+    let hybridLeft = running['hibrido'] || 0;
+    return reqs.every(req => {
+      const have = running[req.type] || 0;
+      const need = req.qty || 1;
+      if (have >= need) return true;
+      if (req.type === 'manager') return false; // hybrids can't fill manager
+      const gap = need - have;
+      if (hybridLeft >= gap) { hybridLeft -= gap; return true; }
+      return false;
+    });
+  }
+
+  // Already satisfied by existing assignments — nothing new needed
+  if (checkSatisfied({ ...existingPool })) return [];
+
+  // Sort pool: mission-match first (preserves free mesa/hand order otherwise)
+  const sorted = [...pool].sort((a, b) => {
+    const aM = (a.mision && a.mision === clientMission) ? 1 : 0;
+    const bM = (b.mision && b.mision === clientMission) ? 1 : 0;
+    return bM - aM;
+  });
+
+  const chosen = [];
+  const running = { ...existingPool };
+
+  // Pass 1: pick typed (non-hybrid) talents that fill a specific unmet requirement
+  for (const talent of sorted) {
+    if (checkSatisfied({ ...running })) break;
+    const fillsGap = (talent.resources || []).some(r => {
+      if (r.type === 'hibrido') return false;
+      const req = reqs.find(x => x.type === r.type);
+      return req && (running[r.type] || 0) < (req.qty || 1);
+    });
+    if (!fillsGap) continue;
+    chosen.push(talent);
+    (talent.resources || []).forEach(r => {
+      running[r.type] = (running[r.type] || 0) + (r.qty || 1);
+    });
+  }
+
+  if (checkSatisfied({ ...running })) return chosen;
+
+  // Pass 2: add hybrid talents to cover remaining gaps
+  // checkSatisfied() correctly tracks hybrid consumption across ALL requirements,
+  // so there's no risk of double-counting hybrids here.
+  for (const talent of sorted) {
+    if (checkSatisfied({ ...running })) break;
+    if (chosen.find(c => c._uid === talent._uid)) continue;
+    if (!(talent.resources || []).some(r => r.type === 'hibrido')) continue;
+    chosen.push(talent);
+    (talent.resources || []).forEach(r => {
+      running[r.type] = (running[r.type] || 0) + (r.qty || 1);
+    });
+  }
+
+  return checkSatisfied({ ...running }) ? chosen : null;
+}
+
+// Build all candidate plans for this turn, then greedily select the best non-conflicting set.
+// KEY DESIGN: clients are sorted by priority using the full pool, but plans are RE-GENERATED
+// using the remaining (unused) pool for each client in turn. This way, if a free hand/mesa
+// talent gets claimed by a higher-priority client, a lower-priority client naturally falls
+// back to market cards rather than being silently dropped.
+function aiPlanTurn(s) {
+  const LEVEL_UP_BONUS = 4; // K bonus per level gained above current
+
+  // ── Build full talent pool ───────────────────────────────────────────────────
+  const fullTalentPool = [
+    ...s.mesa.filter(c => c.type === 'talento').map(t => ({ ...t, src: 'mesa',   cost: 0 })),
+    ...s.hand.filter(c => c.type === 'talento').map(t => ({ ...t, src: 'hand',   cost: 0 })),
+    ...s.mainMarket.filter(c => c.type === 'talento').map(t => ({ ...t, src: 'market', cost: t.cost || 0 })),
+  ];
+
+  // ── Build client pool ────────────────────────────────────────────────────────
+  const clientPool = [
+    ...s.mesa.filter(c => c.type === 'cliente').map(c => ({ ...c, src: 'mesa' })),
+    ...s.clientMarket.filter(c => c.type === 'cliente').map(c => ({
+      ...c, src: 'market', currentLevel: 1, assignedTalents: [],
+    })),
+  ];
+
+  // ── Phase 1: score each client with the FULL pool to get priority order ──────
+  // We find the best achievable level per client and compute a priority score.
+  // This determines which clients the AI serves first.
+  const prioritized = clientPool.map(client => {
+    const maxLevel = (client.levels || []).length;
+    const curLvl   = client.currentLevel || 1;
+    for (let lvl = maxLevel; lvl >= curLvl; lvl--) {
+      const lvlDef = getLvl(client, lvl);
+      if (!lvlDef) continue;
+      const chosen = aiSatisfyReqs(
+        lvlDef.requirements || [],
+        sumResources(client.assignedTalents || []),
+        fullTalentPool,
+        client.mision
+      );
+      if (chosen === null) continue;
+      // Respect the 1-market-card-per-turn rule even in scoring
+      const marketCount = chosen.filter(t => t.src === 'market').length;
+      if (marketCount > 1) continue;
+      let purchaseCost = 0, newRecurring = 0;
+      for (const t of chosen) {
+        if (t.src === 'market') purchaseCost += t.cost;
+        if (t.src !== 'mesa') {
+          const rc = (t.recurringCost || 0) > 0 ? t.recurringCost : (t.maintenanceCost || 0);
+          newRecurring += rc;
+        }
+      }
+      const netGain = (lvlDef.fee || 0) - purchaseCost - newRecurring;
+      if (netGain < 0) continue; // skip unprofitable levels in scoring too
+      const score   = netGain + (lvl - curLvl) * LEVEL_UP_BONUS;
+      return { client, score };
+    }
+    return null;
+  }).filter(Boolean).sort((a, b) => b.score - a.score);
+
+  // ── Phase 2: for each client (in priority order) re-plan with REMAINING pool ─
+  // As talents get claimed, lower-priority clients fall back to market alternatives.
+  const MAX_MARKET_CARDS = 1; // rule: only 1 card from the main market per turn
+  const usedTalentUids = new Set();
+  let spentMoney        = 0;
+  let culturaRunning    = s.cultura || 0;
+  let marketCardsUsed   = 0;
+  const selected        = [];
+
+  for (const { client } of prioritized) {
+    const maxLevel = (client.levels || []).length;
+    const curLvl   = client.currentLevel || 1;
+
+    // Pool available to this client: not yet committed, and if market quota is
+    // exhausted exclude market cards entirely so the plan won't depend on them.
+    const availPool = fullTalentPool.filter(t =>
+      !usedTalentUids.has(t._uid) &&
+      (t.src !== 'market' || marketCardsUsed < MAX_MARKET_CARDS)
+    );
+
+    let bestPlan = null;
+    for (let lvl = maxLevel; lvl >= curLvl; lvl--) {
+      const lvlDef = getLvl(client, lvl);
+      if (!lvlDef) continue;
+
+      const reqs         = lvlDef.requirements || [];
+      const fee          = lvlDef.fee || 0;
+      const existingPool = sumResources(client.assignedTalents || []);
+
+      const chosen = aiSatisfyReqs(reqs, existingPool, availPool, client.mision);
+      if (chosen === null) continue;
+
+      // Compute cost/cultura impact
+      let purchaseCost = 0;
+      let culturaDelta = 0;
+      // Recurring cost of talents NOT already on the mesa (hand/market add new upkeep)
+      let newRecurring = 0;
+      for (const t of chosen) {
+        if (t.src === 'market') { purchaseCost += t.cost; culturaDelta -= 1; }
+        else if (t.src === 'hand') { culturaDelta -= 1; }
+        if (t.src !== 'mesa') {
+          const rc = (t.recurringCost || 0) > 0 ? t.recurringCost : (t.maintenanceCost || 0);
+          newRecurring += rc;
+        }
+        const matchBonus = (t.mision && client.mision && t.mision === client.mision) ? 1 : 0;
+        culturaDelta += matchBonus;
+      }
+
+      // Net gain: fee minus one-time buy cost minus new per-turn upkeep
+      const netGain = fee - purchaseCost - newRecurring;
+
+      // Reject plans that are net-negative even before considering cultura
+      if (netGain < 0) continue;
+
+      // Enforce constraints
+      if (spentMoney + purchaseCost > s.money) continue;
+      if (culturaRunning + culturaDelta < 0) continue;
+
+      bestPlan = { client, level: lvl, fee, chosen, purchaseCost, culturaDelta, netGain };
+      break; // highest achievable level for this client
+    }
+
+    if (!bestPlan) continue;
+
+    // Commit plan — mark its talents as used so later clients can't take them
+    selected.push(bestPlan);
+    bestPlan.chosen.forEach(t => {
+      usedTalentUids.add(t._uid);
+      if (t.src === 'market') marketCardsUsed++;
+    });
+    spentMoney     += bestPlan.purchaseCost;
+    culturaRunning += bestPlan.culturaDelta;
+  }
+
+  return selected;
+}
+
+// Execute the selected plans on the flat state
+function aiExecutePlan(s, plans) {
+  let state = s;
+
+  // Collect what needs to happen
+  const clientsFromMarket = plans.map(p => p.client).filter(c => c.src === 'market');
+  const talentsToBuy      = [];
+  const talentsFromHand   = [];
+
+  for (const plan of plans) {
+    for (const t of plan.chosen) {
+      if (t.src === 'market') talentsToBuy.push(t);
+      else if (t.src === 'hand') talentsFromHand.push(t);
+    }
+  }
+
+  // Step 1 ── Move clients from clientMarket to mesa
+  let placedClients = state.mesa.filter(c => c.type === 'cliente').length;
+  for (const client of clientsFromMarket) {
+    const nx = 20 + placedClients * 30;
+    const ny = 20 + placedClients * 20;
+    state = {
+      ...state,
+      clientMarket: state.clientMarket.filter(c => c._uid !== client._uid),
+      mesa: [...state.mesa, { ...client, _x: nx, _y: ny, assignedTalents: [] }],
+    };
+    state = addLog(`🤖 Mueve cliente: ${client.name}`, state);
+    placedClients++;
+  }
+
+  // Step 2 ── Buy market talents (remove from market, deduct money, add to hand)
+  for (const t of talentsToBuy) {
+    if (t.cost > state.money) continue;
+    state = {
+      ...state,
+      mainMarket: state.mainMarket.filter(c => c._uid !== t._uid),
+      hand:       [...state.hand, t],
+      money:      state.money - t.cost,
+    };
+    state = addLog(`🤖 Compró: ${t.name}${t.cost > 0 ? ` (-${t.cost}K)` : ''}`, state);
+  }
+
+  // Step 3 ── Play hand/bought talents to mesa (costs 1 cultura each)
+  const toPlay = [...talentsFromHand, ...talentsToBuy];
+  let placedTalents = state.mesa.filter(c => c.type === 'talento').length;
+  for (const t of toPlay) {
+    const nx = 20 + (placedTalents % 4) * 50;
+    const ny = 180 + Math.floor(placedTalents / 4) * 50;
+    state = {
+      ...state,
+      hand: state.hand.filter(c => c._uid !== t._uid),
+      mesa: [...state.mesa, { ...t, _x: nx, _y: ny }],
+      cultura: (state.cultura || 0) - 1,
+    };
+    placedTalents++;
+  }
+
+  // Step 4 ── Assign talents to their clients (cultura +matchBonus per assignment)
+  for (const plan of plans) {
+    const clientUid = plan.client._uid;
+    for (const talent of plan.chosen) {
+      const matchBonus = (talent.mision && plan.client.mision && talent.mision === plan.client.mision) ? 1 : 0;
+      state = {
+        ...state,
+        mesa: state.mesa
+          .filter(c => c._uid !== talent._uid)
+          .map(c => c._uid === clientUid
+            ? { ...c, assignedTalents: [...(c.assignedTalents || []), talent] }
+            : c),
+        cultura: (state.cultura || 0) + matchBonus,
+      };
+    }
+    // Update client level if upgrading
+    if (plan.level !== (plan.client.currentLevel || 1)) {
+      state = {
+        ...state,
+        mesa: state.mesa.map(c => c._uid === clientUid ? { ...c, currentLevel: plan.level } : c),
+      };
+    }
+  }
+
+  return state;
+}
+
+// Full AI turn: plan → execute → end turn
+function aiTakeTurn(state) {
+  // Turn 0 is setup — no actions, just pass
+  if (state.turn === 0) {
+    return reducer(state, { type: 'END_TURN' });
+  }
+
+  let s = flatP(state);
+
+  const plans = aiPlanTurn(s);
+  if (plans.length > 0) {
+    s = aiExecutePlan(s, plans);
+    const summary = plans.map(p => `${p.client.name} Lv${p.level} (+${p.fee}K)`).join(', ');
+    s = addLog(`🤖 Jugada: ${summary}`, s);
+  } else {
+    s = addLog('🤖 Sin jugada rentable este turno', s);
+  }
+
+  let result = unFlatP(s, state);
+  result = addLog(`🤖 ${state.players[state.activePlayer].name} terminó su turno`, result);
+  return reducer(result, { type: 'END_TURN' });
 }
 
 // ─── REDUCER ─────────────────────────────────────────────────────────────────
@@ -1113,41 +1452,8 @@ function reducer(state, action) {
       return { ...state, marketSize: ms };
     }
     case 'END_TURN': {
-      const t = state.turn + 1;
       const MAX_HAND = 4;
-      let s = state;
-
-      // ── Helpers ─────────────────────────────────────────────────────────────
-      // Sum resources produced by an array of talent cards
-      const sumResources = (talents) => {
-        const pool = {};
-        (talents || []).forEach(tk => {
-          (tk.resources || []).forEach(r => {
-            pool[r.type] = (pool[r.type] || 0) + (r.qty || 1);
-          });
-        });
-        return pool;
-      };
-      // Check if a resource pool satisfies a requirements array.
-      // Hybrid resources act as wildcards for any type except 'manager'.
-      const satisfies = (pool, reqs) => {
-        if (!reqs || reqs.length === 0) return true;
-        let hybridLeft = pool['hibrido'] || 0;
-        return reqs.every(req => {
-          const have = pool[req.type] || 0;
-          const need = req.qty || 1;
-          if (have >= need) return true;
-          // Manager cannot be substituted by hybrid resources
-          if (req.type === 'manager') return false;
-          // Fill the shortfall with hybrid resources
-          const gap = need - have;
-          if (hybridLeft >= gap) { hybridLeft -= gap; return true; }
-          return false;
-        });
-      };
-      // Get the level definition object for a given level number
-      const getLvl = (client, lvl) =>
-        (client.levels || []).find(l => l.level === lvl) || null;
+      let s = flatP(state);
 
       // ── 0. Discard down to max hand size ────────────────────────────────────
       let discardNote = '';
@@ -1253,34 +1559,59 @@ function reducer(state, action) {
         s = { ...s, cultura: (s.cultura || 0) + culturaDelta };
       }
 
-      // ── 5. Draw one card from main deck ─────────────────────────────────────
-      if (s.mainDeck.length > 0) {
-        const [drawn, ...restDeck] = s.mainDeck;
-        s = { ...s, mainDeck: restDeck, hand: [...s.hand, drawn] };
-        s = addLog(`🃏 Robaste: ${drawn.name}`, s);
-      } else {
-        s = addLog('⚠️ Mazo principal vacío — no se robó carta', s);
-      }
+      // ── 5. End-of-turn / round handling ─────────────────────────────────────
+      // nextPlayer cycles: 0→1→2→…→0. When it wraps back to 0, a full round ended.
+      const nextPlayer  = (state.activePlayer + 1) % state.numPlayers;
+      const isNewRound  = nextPlayer === 0;
+      const newTurn     = isNewRound ? state.turn + 1 : state.turn;
 
-      // ── 6. Place top client from deck directly onto mesa ────────────────────
-      if (s.clientDeck.length > 0) {
-        const [newClient, ...restClients] = s.clientDeck;
-        // Position the new client to avoid stacking exactly at (20,20)
-        const clientsOnMesa = s.mesa.filter(c => c.type === 'cliente').length;
-        const nx = 20 + clientsOnMesa * 30;
-        const ny = 20 + clientsOnMesa * 20;
-        const placed = { ...newClient, _x: nx, _y: ny, assignedTalents: newClient.assignedTalents || [] };
-        s = { ...s, clientDeck: restClients, mesa: [...s.mesa, placed] };
-        s = addLog(`👥 Nuevo cliente en mesa: ${newClient.name}`, s);
-      } else {
-        s = addLog('⚠️ Mazo de clientes vacío — no llegó cliente nuevo', s);
-      }
-
-      // ── 7. Refill main market ────────────────────────────────────────────────
+      // Market refills after every player's turn (keeps it at the configured minimum)
       s = refillMarkets(s);
-      s = { ...s, turn: t };
-      s = addLog(`⏭️ ─── Turno ${t}${discardNote} ───`, s);
-      return s;
+
+      s = addLog(`⏭️ ─── Turno ${newTurn}${discardNote} ───`, s);
+      let result = unFlatP({ ...s, turn: newTurn }, state);
+      if (state.numPlayers > 1) {
+        result = { ...result, activePlayer: nextPlayer };
+        result = addLog(`👤 Turno de ${result.players[nextPlayer].name}`, result);
+      }
+
+      // ── 6 & 7. Deal card + client to the NEXT player (skipped during turn 0) ──
+      // Both go to the *next* player after the switch so they're already there
+      // when that player sees their board. newTurn (not state.turn) is the right
+      // gate: when the last player ends turn 0, newTurn is 1 and the next player
+      // deserves their starting card and client for turn 1.
+      if (newTurn > 0) {
+        // 6. Draw one card from main deck for the next player
+        if (result.mainDeck.length > 0) {
+          const [drawn, ...restDeck] = result.mainDeck;
+          const updPlayers = result.players.map((p, i) =>
+            i === nextPlayer ? { ...p, hand: [...p.hand, drawn] } : p
+          );
+          result = { ...result, mainDeck: restDeck, players: updPlayers };
+          result = addLog(`🃏 Robaste: ${drawn.name}`, result);
+        } else {
+          result = addLog('⚠️ Mazo principal vacío — no se robó carta', result);
+        }
+
+        // 7. Place new client on the next player's mesa
+        if (result.clientDeck.length > 0) {
+          const [newClient, ...restClients] = result.clientDeck;
+          const pMesa = result.players[nextPlayer].mesa;
+          const clientsOnMesa = pMesa.filter(c => c.type === 'cliente').length;
+          const nx = 20 + clientsOnMesa * 30;
+          const ny = 20 + clientsOnMesa * 20;
+          const placed = { ...newClient, _x: nx, _y: ny, assignedTalents: newClient.assignedTalents || [] };
+          const updPlayers2 = result.players.map((p, i) =>
+            i === nextPlayer ? { ...p, mesa: [...p.mesa, placed] } : p
+          );
+          result = { ...result, clientDeck: restClients, players: updPlayers2 };
+          result = addLog(`👥 Nuevo cliente en mesa: ${newClient.name}`, result);
+        } else {
+          result = addLog('⚠️ Mazo de clientes vacío — no llegó cliente nuevo', result);
+        }
+      }
+
+      return result;
     }
     case 'REORDER': {
       const { zone, cardUid, refUid, after } = action;
@@ -1293,11 +1624,20 @@ function reducer(state, action) {
         const at = after ? refIdx + 1 : refIdx;
         return [...rest.slice(0, at), card, ...rest.slice(at)];
       };
-      const simpleZones = ['hand','mesa','mainMarket','clientMarket','discard'];
-      if (simpleZones.includes(zone)) return { ...state, [zone]: reorder(state[zone]) };
+      if (zone === 'hand' || zone === 'mesa') {
+        const flat = flatP(state);
+        return unFlatP({ ...flat, [zone]: reorder(flat[zone]) }, state);
+      }
+      const sharedZones = ['mainMarket','clientMarket','discard'];
+      if (sharedZones.includes(zone)) return { ...state, [zone]: reorder(state[zone]) };
       if (zone.startsWith('assigned-')) {
         const cUid = zone.slice(9);
-        return { ...state, mesa: state.mesa.map(c => c._uid === cUid ? { ...c, assignedTalents: reorder(c.assignedTalents||[]) } : c) };
+        const pi = state.players.findIndex(p => p.mesa.some(c => c._uid === cUid));
+        if (pi === -1) return state;
+        const players = state.players.map((p, i) => i !== pi ? p : {
+          ...p, mesa: p.mesa.map(c => c._uid === cUid ? { ...c, assignedTalents: reorder(c.assignedTalents||[]) } : c)
+        });
+        return { ...state, players };
       }
       return state;
     }
@@ -1305,8 +1645,7 @@ function reducer(state, action) {
       const upd = arr => arr.map(c => c._uid === action.uid ? { ...c, currentLevel: action.level } : c);
       return {
         ...state,
-        hand:         upd(state.hand),
-        mesa:         upd(state.mesa),
+        players:      state.players.map(p => ({ ...p, hand: upd(p.hand), mesa: upd(p.mesa) })),
         mainMarket:   upd(state.mainMarket),
         clientMarket: upd(state.clientMarket),
         discard:      upd(state.discard),
@@ -1318,7 +1657,13 @@ function reducer(state, action) {
     case 'SHUFFLE_CLIENT': return addLog('🔀 Mazo clientes mezclado',   { ...state, clientDeck: shuffle(state.clientDeck) });
     case 'CTX':    return { ...state, ctx: action.v, detail: null };
     case 'DETAIL': return { ...state, detail: action.card, ctx: null };
-    case 'RESET':  _uid = 0; return createInitialState(state.marketSize);
+    case 'RESET':  _uid = 0; return createInitialState(state.marketSize, state.numPlayers);
+    case 'SET_NUM_PLAYERS': _uid = 0; return createInitialState(state.marketSize, Math.max(1, Math.min(4, action.n)));
+    case 'SET_PLAYER_TYPE': {
+      const players = state.players.map((p, i) => i === action.idx ? { ...p, isAI: action.isAI } : p);
+      return { ...state, players };
+    }
+    case 'AI_TAKE_TURN': return aiTakeTurn(state);
     default: return state;
   }
 }
@@ -1725,11 +2070,27 @@ function ClientWithTalents({ card, scale, startDrag, openCtx, onHover, onHoverEn
 function App() {
   const [state, dispatch] = useReducer(reducer, null, () => createInitialState(4));
   const {
-    turn, money, cultura, resources,
-    mainDeck, clientDeck, hand, mesa, discard,
+    turn, numPlayers, activePlayer,
+    mainDeck, clientDeck, discard,
     mainMarket, clientMarket,
     marketSize, ctx, detail, log,
   } = state;
+  const activeP = state.players[activePlayer];
+  const { hand, mesa, money, cultura, resources } = activeP;
+
+  // ── viewingMesa: which player's mesa/tab is displayed (can differ from activePlayer) ──
+  const [viewingMesa, setViewingMesa] = useState(0);
+  useEffect(() => { setViewingMesa(state.activePlayer); }, [state.activePlayer]);
+
+  // ── AI turn trigger: fire AI_TAKE_TURN when the active player is an AI ──
+  useEffect(() => {
+    if (!state.players) return;
+    const p = state.players[state.activePlayer];
+    if (!p || !p.isAI) return;
+    const t = setTimeout(() => dispatch({ type: 'AI_TAKE_TURN' }), 400);
+    return () => clearTimeout(t);
+  }, [state.activePlayer, state.turn]);
+  const viewingMesaData = state.players[viewingMesa]?.mesa || [];
 
   // ── Mission colors (reactive state — drives CSS + card inline styles) ──
   const [missionColors, setMissionColors] = useState({...DEFAULT_MISSION_COLORS});
@@ -1925,11 +2286,13 @@ function App() {
     const x = Math.max(0, e.clientX - rect.left - (info.grabOffset?.x ?? 0));
     const y = Math.max(0, e.clientY - rect.top  - (info.grabOffset?.y ?? 0));
     if (info.fromZone === 'mesa') {
-      dispatch({ type:'POSITION_CARD', uid:info.card._uid, x, y });
+      // Reposition within the currently viewed mesa
+      dispatch({ type:'POSITION_CARD', uid:info.card._uid, x, y, playerIdx: viewingMesa });
     } else {
+      // Cards dragged from hand/market go to the active player's mesa (via flatP)
       dispatch({ type:'MOVE', card:info.card, fromZone:info.fromZone, toZone:'mesa', x, y });
     }
-  }, [setInsert]);
+  }, [setInsert, viewingMesa]);
 
   // ── Context menu ──
   const openCtx = useCallback((card, zone, e) => {
@@ -1951,12 +2314,50 @@ function App() {
       {/* ── STATUS BAR ── */}
       <div className="sim-statusbar">
         <div className="turn-badge">Turno <span className="turn-number">{turn}</span></div>
-        <StatTile label="Dinero" icon="💰" value={`${money}K`} color="#fbbf24"
-          onP={() => dispatch({ type:'ADJUST', k:'money',   d:1 })}
-          onM={() => dispatch({ type:'ADJUST', k:'money',   d:-1 })}/>
-        <StatTile label="Cultura" icon="✦" value={cultura} color="#a78bfa"
-          onP={() => dispatch({ type:'ADJUST', k:'cultura', d:1 })}
-          onM={() => dispatch({ type:'ADJUST', k:'cultura', d:-1 })}/>
+
+        {/* Per-player stats strip — one chip per player */}
+        {state.players.map((p, i) => {
+          const isActive = i === activePlayer;
+          const col = PLAYER_COLORS[i];
+          return (
+            <div key={i} style={{
+              display:'flex', alignItems:'center', gap:4, flexShrink:0,
+              background: isActive ? '#1a1d27' : '#13151f',
+              border:`1px solid ${isActive ? col+'66' : '#1e2235'}`,
+              borderRadius:8, padding:'3px 7px',
+              opacity: isActive ? 1 : 0.65,
+              transition:'all .2s',
+            }}>
+              <div style={{ width:7, height:7, borderRadius:'50%', background:col, boxShadow: isActive ? `0 0 5px ${col}` : 'none', flexShrink:0 }}/>
+              <span style={{ fontSize:11, fontWeight:700, color: isActive ? col : '#4a5577' }}>
+                {p.name.replace('Jugador ','J')}{p.isAI ? '🤖' : ''}
+              </span>
+              {/* Money + controls */}
+              <span style={{ fontSize:10, color:'#4a5577' }}>💰</span>
+              <span style={{ fontSize:15, fontWeight:700, color:'#fbbf24', minWidth:24 }}>{p.money}K</span>
+              {isActive && !p.isAI && (
+                <div style={{ display:'flex', flexDirection:'column', gap:1, marginRight:3 }}>
+                  <button className="stat-btn" style={{ fontSize:8, padding:'0 3px', lineHeight:'11px' }} title="Dinero +"
+                    onClick={() => dispatch({ type:'ADJUST', k:'money', d:1 })}>+</button>
+                  <button className="stat-btn" style={{ fontSize:8, padding:'0 3px', lineHeight:'11px' }} title="Dinero −"
+                    onClick={() => dispatch({ type:'ADJUST', k:'money', d:-1 })}>−</button>
+                </div>
+              )}
+              {/* Cultura + controls */}
+              <span style={{ fontSize:10, color:'#4a5577' }}>✦</span>
+              <span style={{ fontSize:15, fontWeight:700, color:'#a78bfa', minWidth:18 }}>{p.cultura}</span>
+              {isActive && !p.isAI && (
+                <div style={{ display:'flex', flexDirection:'column', gap:1 }}>
+                  <button className="stat-btn" style={{ fontSize:8, padding:'0 3px', lineHeight:'11px' }} title="Cultura +"
+                    onClick={() => dispatch({ type:'ADJUST', k:'cultura', d:1 })}>+</button>
+                  <button className="stat-btn" style={{ fontSize:8, padding:'0 3px', lineHeight:'11px' }} title="Cultura −"
+                    onClick={() => dispatch({ type:'ADJUST', k:'cultura', d:-1 })}>−</button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
         <div style={{ display:'flex', alignItems:'center', gap:3, background:'#1a1d27', border:'1px solid #2d3347', borderRadius:8, padding:'4px 8px' }}>
           <span style={{ fontSize:13 }}>🔍</span>
           <button className="stat-btn" onClick={() => setCardZoom(z => Math.max(0.4, Math.round((z-0.1)*10)/10))}>−</button>
@@ -1968,6 +2369,22 @@ function App() {
         </button>
         <input ref={loadSetRef} type="file" accept=".json" style={{display:'none'}} onChange={handleLoadSet}/>
         <button className="end-turn-btn" onClick={() => dispatch({ type:'END_TURN' })}>Fin de Turno ⏭</button>
+
+        {/* Player count selector — right side */}
+        <div style={{ display:'flex', alignItems:'center', gap:3, background:'#1a1d27', border:'1px solid #2d3347', borderRadius:8, padding:'4px 8px', flexShrink:0, marginLeft:'auto' }}>
+          <span style={{ fontSize:10, fontWeight:700, color:'#64748b', marginRight:2 }}>👥</span>
+          {[1,2,3,4].map(n => (
+            <button key={n}
+              onClick={() => dispatch({ type:'SET_NUM_PLAYERS', n })}
+              style={{ width:22, height:22, borderRadius:4, border:'none', cursor:'pointer', fontWeight:700, fontSize:12,
+                background: numPlayers === n ? PLAYER_COLORS[n-1] : '#252a3a',
+                color: numPlayers === n ? '#fff' : '#64748b',
+                transition:'background .15s' }}>
+              {n}
+            </button>
+          ))}
+        </div>
+
         <button className="reset-btn" onClick={() => dispatch({ type:'RESET' })} title="Reiniciar">↺</button>
       </div>
 
@@ -2006,8 +2423,51 @@ function App() {
 
         {/* ── CENTER: MESA + MANO ── */}
         <div className="sim-center">
+
+          {/* ── Player tabs (only shown when numPlayers > 1) ── */}
+          {numPlayers > 1 && (
+            <div style={{ display:'flex', background:'#0d1019', borderBottom:'1px solid #1e2130', flexShrink:0, overflowX:'auto' }}>
+              {state.players.map((p, i) => (
+                <div key={i} style={{ display:'flex', alignItems:'stretch', flexShrink:0 }}>
+                  <button
+                    onClick={() => setViewingMesa(i)}
+                    style={{
+                      padding:'6px 10px',
+                      border:'none',
+                      borderBottom: viewingMesa === i ? `2px solid ${PLAYER_COLORS[i]}` : '2px solid transparent',
+                      background: viewingMesa === i ? '#0f1117' : 'transparent',
+                      color: viewingMesa === i ? PLAYER_COLORS[i] : '#3a4060',
+                      fontWeight:700, fontSize:12, cursor:'pointer',
+                      display:'flex', alignItems:'center', gap:5,
+                      transition:'color .15s',
+                    }}>
+                    {activePlayer === i && <span style={{ fontSize:9, color: PLAYER_COLORS[i] }}>▶</span>}
+                    <span style={{ color: viewingMesa === i ? PLAYER_COLORS[i] : (activePlayer === i ? PLAYER_COLORS[i]+'99' : '#3a4060') }}>{p.name}</span>
+                    <span style={{ fontSize:10, background:'#1a1d27', borderRadius:999, padding:'1px 5px', color:'#64748b' }}>{p.mesa.length}</span>
+                  </button>
+                  {/* Human / AI toggle */}
+                  <button
+                    onClick={() => dispatch({ type:'SET_PLAYER_TYPE', idx:i, isAI: !p.isAI })}
+                    title={p.isAI ? 'IA — click para cambiar a Humano' : 'Humano — click para cambiar a IA'}
+                    style={{
+                      border:'none', background:'transparent', cursor:'pointer',
+                      fontSize:13, padding:'0 7px',
+                      borderBottom: viewingMesa === i ? `2px solid ${PLAYER_COLORS[i]}` : '2px solid transparent',
+                      opacity: p.isAI ? 1 : 0.35,
+                      transition:'opacity .15s',
+                    }}>
+                    🤖
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="zone-label">
-            <span>Mesa — {mesa.length} carta{mesa.length !== 1 ? 's' : ''}</span>
+            <span>Mesa{numPlayers > 1 ? ` de ${state.players[viewingMesa]?.name}` : ''} — {viewingMesaData.length} carta{viewingMesaData.length !== 1 ? 's' : ''}</span>
+            {numPlayers > 1 && viewingMesa !== activePlayer && (
+              <span style={{ fontSize:9, color:'#64748b', fontStyle:'italic' }}>solo lectura</span>
+            )}
           </div>
           <div
             ref={mesaRef}
@@ -2016,12 +2476,12 @@ function App() {
             onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDropZone(null); }}
             onDrop={mesaDrop}
           >
-            {mesa.length === 0 && (
+            {viewingMesaData.length === 0 && (
               <div className="empty-zone" style={{ position:'absolute', inset:0, display:'flex' }}>
                 <div><div style={{ fontSize:28, marginBottom:6 }}>🃏</div>Mesa vacía<br/><span style={{ fontSize:10 }}>Jugá o arrastá cartas aquí</span></div>
               </div>
             )}
-            {mesa.map(card => (
+            {viewingMesaData.map(card => (
               card.type === 'cliente'
                 ? <div key={card._uid} style={{ position:'absolute', left: card._x ?? 20, top: card._y ?? 20 }}>
                     <ClientWithTalents card={card} scale={mesaScale}
@@ -2051,7 +2511,7 @@ function App() {
           />
 
           <div className="zone-label">
-            <span>Mano — {hand.length} carta{hand.length !== 1 ? 's' : ''}</span>
+            <span>Mano{numPlayers > 1 ? ` de ${activeP.name}` : ''} — {hand.length} carta{hand.length !== 1 ? 's' : ''}</span>
           </div>
           <DropZone zone="hand" dropZone={dropZone} handlers={handlers}
             className="sim-hand" style={{ height: handHeight, minHeight: handHeight }}>

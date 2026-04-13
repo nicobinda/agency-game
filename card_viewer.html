@@ -482,6 +482,44 @@ const MISSION_COLOR_MAP = {
   retail:'#BE4486', tecnologia:'#6638B8', viajes:'#72B3F5',
 };
 
+// ── Mission color helpers ────────────────────────────────────────────────────
+const DEFAULT_MISSION_COLORS = {
+  arte:'#A88ED8', deporte:'#C6CFE8', entretenimiento:'#F0D498',
+  finanzas:'#9D846B', gastronomia:'#F15F02', naturaleza:'#43E95A',
+  retail:'#BE4486', tecnologia:'#6638B8', viajes:'#72B3F5',
+};
+
+function hexToRgb(hex) {
+  const h = hex.replace('#','');
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+function rgbToHex(r,g,b) {
+  return '#'+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0')).join('');
+}
+function darkenHex(hex, amt) {
+  const [r,g,b] = hexToRgb(hex);
+  return rgbToHex(r*(1-amt), g*(1-amt), b*(1-amt));
+}
+function lightenHex(hex, amt) {
+  const [r,g,b] = hexToRgb(hex);
+  return rgbToHex(r+(255-r)*amt, g+(255-g)*amt, b+(255-b)*amt);
+}
+
+function applyMissionColors(colors) {
+  MISSIONS.forEach(m => {
+    const main = colors[m] || DEFAULT_MISSION_COLORS[m];
+    MISSION_COLOR_MAP[m]    = main;
+    MISSION_STRIP_COLORS[m] = darkenHex(main, 0.25);
+    MISSION_BG_MAP[m]       = lightenHex(main, 0.87);
+  });
+  // Patch CSS .mission-bg-* classes
+  let tag = document.getElementById('mission-dynamic-css');
+  if (!tag) { tag = document.createElement('style'); tag.id = 'mission-dynamic-css'; document.head.appendChild(tag); }
+  tag.textContent = MISSIONS.map(m =>
+    `.mission-bg-${m}{background:${MISSION_BG_MAP[m]}!important;border-color:${MISSION_STRIP_COLORS[m]}!important;}`
+  ).join('');
+}
+
 function missionBarTextColor(hex) {
   if (!hex) return '#111';
   const r = parseInt(hex.slice(1,3),16);
@@ -1611,6 +1649,82 @@ function EditModal({card, onClose, onSave}) {
   );
 }
 
+
+// ─── MISSION COLOR EDITOR ────────────────────────────────────────────────────
+function MissionColorEditor({ colors, onChange, onClose }) {
+  const [local, setLocal] = React.useState({...colors});
+  const upd = (m, v) => {
+    const next = {...local, [m]: v};
+    setLocal(next);
+    onChange(next); // live preview
+  };
+  const restore = () => {
+    setLocal({...DEFAULT_MISSION_COLORS});
+    onChange({...DEFAULT_MISSION_COLORS});
+  };
+  const inputStyle = {
+    width:80, background:'#1e2130', border:'1px solid #2d3347',
+    borderRadius:6, padding:'4px 8px', color:'#f1f5f9',
+    fontSize:12, fontFamily:'monospace', outline:'none',
+  };
+  return (
+    <div
+      style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.72)', display:'flex',
+               alignItems:'center', justifyContent:'center', zIndex:600 }}
+      onClick={onClose}
+    >
+      <div
+        style={{ background:'#13161f', border:'1px solid #2d3347', borderRadius:14,
+                 padding:'20px 22px', minWidth:360, maxHeight:'90vh', overflowY:'auto' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
+          <span style={{ fontSize:16, fontWeight:700, color:'#f1f5f9' }}>🎨 Colores de Misión</span>
+          <button onClick={onClose}
+            style={{ background:'#1e2130', border:'1px solid #2d3347', borderRadius:6,
+                     color:'#94a3b8', cursor:'pointer', fontSize:13, padding:'4px 10px' }}>✕</button>
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+          {MISSIONS.map(m => {
+            const main  = local[m] || DEFAULT_MISSION_COLORS[m];
+            const strip = darkenHex(main, 0.25);
+            const bg    = lightenHex(main, 0.87);
+            return (
+              <div key={m} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ fontSize:17, width:22 }}>{MISSION_EMOJI[m]}</span>
+                <span style={{ flex:1, fontSize:13, color:'#94a3b8', textTransform:'capitalize' }}>{m}</span>
+                <div title="Fondo" style={{ width:18, height:24, borderRadius:4, background:bg,    border:'1px solid #3a3f55', flexShrink:0 }}/>
+                <div title="Strip" style={{ width:18, height:24, borderRadius:4, background:strip, border:'1px solid #3a3f55', flexShrink:0 }}/>
+                <input type="color" value={main} onChange={e => upd(m, e.target.value)}
+                  style={{ width:32, height:28, border:'none', borderRadius:6, cursor:'pointer',
+                           background:'transparent', padding:0, flexShrink:0 }}/>
+                <input type="text" value={main}
+                  onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) upd(m, e.target.value); }}
+                  style={inputStyle}/>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ fontSize:10, color:'#3a4060', marginTop:10 }}>
+          Los dos cuadrados muestran el fondo y strip derivados automáticamente.
+        </div>
+        <div style={{ display:'flex', gap:8, marginTop:16 }}>
+          <button onClick={restore}
+            style={{ flex:1, padding:'7px 0', borderRadius:7, border:'1px solid #2d3347',
+                     background:'transparent', color:'#94a3b8', cursor:'pointer', fontSize:13 }}>
+            ↺ Restaurar defaults
+          </button>
+          <button onClick={onClose}
+            style={{ flex:1, padding:'7px 0', borderRadius:7, border:'none',
+                     background:'#6366f1', color:'white', cursor:'pointer', fontSize:13, fontWeight:700 }}>
+            ✓ Listo
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 
 function App() {
@@ -1623,6 +1737,9 @@ function App() {
     ...CARDS_DATA.urgent_actions.map(c=>({...c,type:'accion_urgente'})),
   ],[]);
 
+  const [missionColors, setMissionColors] = useState({...DEFAULT_MISSION_COLORS});
+  const [showColorEditor, setShowColorEditor] = useState(false);
+  React.useEffect(() => { applyMissionColors(missionColors); }, [missionColors]);
   const [sets, setSets]                 = useState([{name:'Default', cards:defaultCards}]);
   const [activeSetIdx, setActiveSetIdx] = useState(0);
   const [newSetName, setNewSetName]     = useState('');
@@ -1674,7 +1791,8 @@ function App() {
     investments:   c.filter(x=>x.type==='inversion'),
     strategies:    c.filter(x=>x.type==='estrategia'),
     urgent_actions:c.filter(x=>x.type==='accion_urgente'),
-  }),[]);
+    mission_colors: missionColors,
+  }),[missionColors]);
 
   const buildCardsFromJson = useCallback(data=>[
     ...(data.clients||[]).map(c=>({...c,type:'cliente'})),
@@ -1702,6 +1820,7 @@ function App() {
         const data = JSON.parse(ev.target.result);
         const newCards = buildCardsFromJson(data);
         const name = file.name.replace(/\.json$/i,'');
+        if (data.mission_colors) setMissionColors(prev=>({...prev,...data.mission_colors}));
         setSets(prev=>[...prev,{name,cards:newCards}]);
         setActiveSetIdx(newIdx);
       } catch(err){ alert('Error al cargar: '+err.message); }
@@ -1897,6 +2016,7 @@ function App() {
         <div className="topbar">
           <input className="search-input" placeholder="🔍  Buscar por nombre, efecto o flavor text..." value={search} onChange={e=>setSearch(e.target.value)} style={{maxWidth:400}}/>
           <div style={{fontSize:13,color:'#64748b',marginLeft:'auto'}}>{filtered.length} carta{filtered.length!==1?'s':''} encontrada{filtered.length!==1?'s':''}</div>
+          <button className="btn btn-secondary" style={{flexShrink:0,padding:'7px 12px',fontSize:13}} onClick={()=>setShowColorEditor(true)}>🎨 Colores</button>
           <button className="btn btn-primary" style={{flexShrink:0,padding:'7px 14px',fontSize:13}} onClick={()=>setShowCreate(true)}>✨ Nueva carta</button>
         </div>
         {filtered.length===0
@@ -1905,6 +2025,7 @@ function App() {
         }
       </div>
 
+      {showColorEditor&&<MissionColorEditor colors={missionColors} onChange={setMissionColors} onClose={()=>setShowColorEditor(false)}/>}
       {selectedCard&&!editCard&&<CardDetailModal card={selectedCard} onClose={()=>setSelectedCard(null)} onEdit={c=>setEditCard(c)}/>}
       {editCard&&<EditModal card={editCard} onClose={()=>setEditCard(null)} onSave={handleSave}/>}
       {showCreate&&<CreateCardModal onClose={()=>setShowCreate(false)} onCreate={handleCreate}/>}
