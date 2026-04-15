@@ -1123,15 +1123,54 @@ function aiSatisfyReqs(reqs, existingPool, pool, clientMission) {
   return checkSatisfied({ ...running }) ? chosen : null;
 }
 
-// Build all candidate plans for this turn, then greedily select the best non-conflicting set.
-// KEY DESIGN: clients are sorted by priority using the full pool, but plans are RE-GENERATED
-// using the remaining (unused) pool for each client in turn. This way, if a free hand/mesa
-// talent gets claimed by a higher-priority client, a lower-priority client naturally falls
-// back to market cards rather than being silently dropped.
-function aiPlanTurn(s) {
-  const LEVEL_UP_BONUS = 4; // K bonus per level gained above current
+// ── Per-turn net value of a mesa client: fee earned minus recurring costs paid.
+// Positive = profitable; negative = losing money each turn.
+function aiClientNetValue(c) {
+  const curDef    = getLvl(c, c.currentLevel || 1);
+  const pool      = sumResources(c.assignedTalents || []);
+  const fee       = (curDef && satisfies(pool, curDef.requirements)) ? (curDef.fee || 0) : 0;
+  const recurring = (c.assignedTalents || []).reduce((sum, t) => {
+    return sum + ((t.recurringCost || 0) > 0 ? t.recurringCost : (t.maintenanceCost || 0));
+  }, 0);
+  return fee - recurring;
+}
 
-  // ── Build full talent pool ───────────────────────────────────────────────────
+// Last turn index when regular plays (talents, clients, investments) are meaningful.
+// Used for investment ROI calculations inside aiPlanTurn.
+const AI_LAST_REGULAR_TURN = 7;
+
+// Extract how many cultura points an investment card grants.
+// Effects may be an array of strings OR an array of {description} objects.
+// Returns 0 if the card is not a cultura-investment card.
+function parseCulturaGain(card) {
+  const raw = card.effects || card.effect || '';
+  let text;
+  if (Array.isArray(raw)) {
+    text = raw.map(e => (typeof e === 'string' ? e : (e.description || ''))).join(' ');
+  } else {
+    text = String(raw);
+  }
+  const m = text.match(/[Aa]grega\s+(\d+)\s+de\s+[Cc]ultura/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+// Build all candidate plans for this turn, then greedily select the best non-conflicting set.
+//
+// KEY DESIGN: Two-phase planning with sacrifice evaluation:
+//   Phase 1 — Score every candidate (regular + sacrifice-and-replace options) using the full
+//             talent pool. "Sacrifice" means releasing an existing mesa client to free its
+//             assigned talents for a better incoming client.
+//   Phase 2 — Re-generate each plan with the REMAINING (uncommitted) pool, handling freed
+//             talents from confirmed sacrifices.
+//
+// Tiebreaking: score = netGain + levelUpBonus + futurePotentialBonus + culturaMatchBonus
+function aiPlanTurn(s) {
+  const LEVEL_UP_BONUS      = 4;   // bonus per level gained this turn
+  const FUTURE_LEVEL_BONUS  = 1;   // bonus per level still achievable after this turn
+  const CULTURA_MATCH_BONUS = 0.5; // bonus per mission-matched talent in the chosen set
+  const MAX_MARKET_CARDS    = 1;
+
+  // ── Build talent pool ────────────────────────────────────────────────────────
   const fullTalentPool = [
     ...s.mesa.filter(c => c.type === 'talento').map(t => ({ ...t, src: 'mesa',   cost: 0 })),
     ...s.hand.filter(c => c.type === 'talento').map(t => ({ ...t, src: 'hand',   cost: 0 })),
@@ -1146,10 +1185,15 @@ function aiPlanTurn(s) {
     })),
   ];
 
-  // ── Phase 1: score each client with the FULL pool to get priority order ──────
-  // We find the best achievable level per client and compute a priority score.
-  // This determines which clients the AI serves first.
-  const prioritized = clientPool.map(client => {
+  // ── Pre-compute net values for existing mesa clients ─────────────────────────
+  const mesaClientsInfo = s.mesa
+    .filter(c => c.type === 'cliente')
+    .map(c => ({ client: c, netValue: aiClientNetValue(c) }));
+
+  // ── Helper: score a client at the best achievable level given a pool ─────────
+  // sacrificeCost = per-turn fee value given up by releasing a mesa client.
+  // Returns { level, chosen, purchaseCost, newRecurring, score, netGain } or null.
+  function scoreClientWithPool(client, talentPool, sacrificeCost) {
     const maxLevel = (client.levels || []).length;
     const curLvl   = client.currentLevel || 1;
     for (let lvl = maxLevel; lvl >= curLvl; lvl--) {
@@ -1158,105 +1202,201 @@ function aiPlanTurn(s) {
       const chosen = aiSatisfyReqs(
         lvlDef.requirements || [],
         sumResources(client.assignedTalents || []),
-        fullTalentPool,
+        talentPool,
         client.mision
       );
       if (chosen === null) continue;
-      // Respect the 1-market-card-per-turn rule even in scoring
-      const marketCount = chosen.filter(t => t.src === 'market').length;
-      if (marketCount > 1) continue;
-      let purchaseCost = 0, newRecurring = 0;
+      if (chosen.filter(t => t.src === 'market').length > 1) continue; // 1-card rule
+
+      let purchaseCost = 0, newRecurring = 0, culturaMatches = 0;
       for (const t of chosen) {
         if (t.src === 'market') purchaseCost += t.cost;
-        if (t.src !== 'mesa') {
+        // 'freed' talents are already on the mesa — no new recurring cost
+        if (t.src !== 'mesa' && t.src !== 'freed') {
           const rc = (t.recurringCost || 0) > 0 ? t.recurringCost : (t.maintenanceCost || 0);
           newRecurring += rc;
         }
+        if (t.mision && client.mision && t.mision === client.mision) culturaMatches++;
       }
-      const netGain = (lvlDef.fee || 0) - purchaseCost - newRecurring;
-      if (netGain < 0) continue; // skip unprofitable levels in scoring too
-      const score   = netGain + (lvl - curLvl) * LEVEL_UP_BONUS;
-      return { client, score };
+
+      const netGain = (lvlDef.fee || 0) - purchaseCost - newRecurring - sacrificeCost;
+      if (netGain < 0) continue;
+
+      const score = netGain
+        + (lvl - curLvl)   * LEVEL_UP_BONUS
+        + (maxLevel - lvl) * FUTURE_LEVEL_BONUS
+        + culturaMatches   * CULTURA_MATCH_BONUS;
+
+      return { level: lvl, chosen, purchaseCost, newRecurring, score, netGain };
     }
     return null;
-  }).filter(Boolean).sort((a, b) => b.score - a.score);
+  }
 
-  // ── Phase 2: for each client (in priority order) re-plan with REMAINING pool ─
-  // As talents get claimed, lower-priority clients fall back to market alternatives.
-  const MAX_MARKET_CARDS = 1; // rule: only 1 card from the main market per turn
+  // ── Phase 1: build candidate list (regular + sacrifice-and-replace) ──────────
+  const allCandidates = [];
+
+  for (const client of clientPool) {
+    // Regular option — no sacrifice
+    const reg = scoreClientWithPool(client, fullTalentPool, 0);
+    if (reg) allCandidates.push({ client, ...reg, sacrifice: null });
+
+    // Sacrifice-and-replace: only valid when taking a NEW market client.
+    // We evaluate releasing each existing mesa client and using its freed talents.
+    if (client.src !== 'market') continue;
+
+    for (const { client: mesaClient, netValue } of mesaClientsInfo) {
+      // Cost: the per-turn income we forfeit by releasing mesaClient
+      const sacrificeCost = Math.max(0, netValue);
+      // Cultura we'll lose when the client is released (match bonuses reversed)
+      const culturaLost = (mesaClient.assignedTalents || []).filter(t =>
+        t.mision && mesaClient.mision && t.mision === mesaClient.mision
+      ).length;
+
+      // Extended pool: everything available + mesaClient's freed talents
+      const freedTalents   = (mesaClient.assignedTalents || []).map(t => ({ ...t, src: 'freed', cost: 0 }));
+      const extendedPool   = [...fullTalentPool, ...freedTalents];
+
+      const sac = scoreClientWithPool(client, extendedPool, sacrificeCost);
+      if (!sac) continue;
+
+      // Only prefer sacrifice if it genuinely outscores the regular option
+      const regScore = reg ? reg.score : -Infinity;
+      if (sac.score <= regScore) continue;
+
+      allCandidates.push({ client, ...sac, sacrifice: mesaClient, culturaLost: culturaLost || 0 });
+    }
+  }
+
+  // Sort all candidates by score — best options first
+  allCandidates.sort((a, b) => b.score - a.score);
+
+  // ── Phase 2: greedy selection re-planned with the remaining pool ──────────────
   const usedTalentUids = new Set();
-  let spentMoney        = 0;
-  let culturaRunning    = s.cultura || 0;
-  let marketCardsUsed   = 0;
-  const selected        = [];
+  const usedClientUids = new Set();    // prevents selecting same target client twice
+  const sacrificedUids = new Set();   // prevents sacrificing same client twice
+  let spentMoney       = 0;
+  let culturaRunning   = s.cultura || 0;
+  let marketCardsUsed  = 0;
+  const selected       = [];
 
-  for (const { client } of prioritized) {
+  for (const candidate of allCandidates) {
+    const { client, sacrifice } = candidate;
+
+    if (usedClientUids.has(client._uid))  continue; // target already selected
+    if (sacrificedUids.has(client._uid))  continue; // target is being sacrificed elsewhere
+    if (sacrifice) {
+      if (usedClientUids.has(sacrifice._uid)) continue; // sacrifice target is being upgraded
+      if (sacrificedUids.has(sacrifice._uid)) continue; // sacrifice target already released
+    }
+
+    // Pool available to this plan: unused talents + freed talents from the sacrifice
+    const freedPool = sacrifice
+      ? (sacrifice.assignedTalents || [])
+          .map(t => ({ ...t, src: 'freed', cost: 0 }))
+          .filter(t => !usedTalentUids.has(t._uid))
+      : [];
+
+    const availPool = [
+      ...fullTalentPool.filter(t =>
+        !usedTalentUids.has(t._uid) &&
+        (t.src !== 'market' || marketCardsUsed < MAX_MARKET_CARDS)
+      ),
+      ...freedPool,
+    ];
+
+    // Re-generate the plan with the actual available pool
     const maxLevel = (client.levels || []).length;
     const curLvl   = client.currentLevel || 1;
+    let bestPlan   = null;
 
-    // Pool available to this client: not yet committed, and if market quota is
-    // exhausted exclude market cards entirely so the plan won't depend on them.
-    const availPool = fullTalentPool.filter(t =>
-      !usedTalentUids.has(t._uid) &&
-      (t.src !== 'market' || marketCardsUsed < MAX_MARKET_CARDS)
-    );
-
-    let bestPlan = null;
     for (let lvl = maxLevel; lvl >= curLvl; lvl--) {
       const lvlDef = getLvl(client, lvl);
       if (!lvlDef) continue;
 
-      const reqs         = lvlDef.requirements || [];
-      const fee          = lvlDef.fee || 0;
       const existingPool = sumResources(client.assignedTalents || []);
-
-      const chosen = aiSatisfyReqs(reqs, existingPool, availPool, client.mision);
+      const chosen       = aiSatisfyReqs(lvlDef.requirements || [], existingPool, availPool, client.mision);
       if (chosen === null) continue;
 
-      // Compute cost/cultura impact
-      let purchaseCost = 0;
-      let culturaDelta = 0;
-      // Recurring cost of talents NOT already on the mesa (hand/market add new upkeep)
-      let newRecurring = 0;
+      let purchaseCost = 0, culturaDelta = 0, newRecurring = 0;
       for (const t of chosen) {
         if (t.src === 'market') { purchaseCost += t.cost; culturaDelta -= 1; }
-        else if (t.src === 'hand') { culturaDelta -= 1; }
-        if (t.src !== 'mesa') {
+        else if (t.src === 'hand')   { culturaDelta -= 1; }
+        if (t.src !== 'mesa' && t.src !== 'freed') {
           const rc = (t.recurringCost || 0) > 0 ? t.recurringCost : (t.maintenanceCost || 0);
           newRecurring += rc;
         }
-        const matchBonus = (t.mision && client.mision && t.mision === client.mision) ? 1 : 0;
-        culturaDelta += matchBonus;
+        if (t.mision && client.mision && t.mision === client.mision) culturaDelta += 1;
       }
+      // Account for cultura match bonuses lost when releasing the sacrificed client
+      if (sacrifice) culturaDelta -= (candidate.culturaLost || 0);
 
-      // Net gain: fee minus one-time buy cost minus new per-turn upkeep
-      const netGain = fee - purchaseCost - newRecurring;
-
-      // Reject plans that are net-negative even before considering cultura
+      const sacrificeCost = sacrifice ? Math.max(0, aiClientNetValue(sacrifice)) : 0;
+      const netGain       = (lvlDef.fee || 0) - purchaseCost - newRecurring - sacrificeCost;
       if (netGain < 0) continue;
+      if (spentMoney + purchaseCost > s.money)      continue;
+      if (culturaRunning + culturaDelta < 0)         continue;
 
-      // Enforce constraints
-      if (spentMoney + purchaseCost > s.money) continue;
-      if (culturaRunning + culturaDelta < 0) continue;
-
-      bestPlan = { client, level: lvl, fee, chosen, purchaseCost, culturaDelta, netGain };
-      break; // highest achievable level for this client
+      bestPlan = { client, level: lvl, fee: lvlDef.fee || 0, chosen, purchaseCost, culturaDelta, netGain, sacrifice };
+      break;
     }
 
     if (!bestPlan) continue;
+    // Skip no-op plans with no sacrifice (fee is auto-collected by END_TURN)
+    if (bestPlan.chosen.length === 0 && bestPlan.level === curLvl && !sacrifice) continue;
 
-    // Skip no-op plans: nothing to assign and no level change.
-    // Fee is collected automatically by END_TURN regardless — no action needed.
-    if (bestPlan.chosen.length === 0 && bestPlan.level === (client.currentLevel || 1)) continue;
-
-    // Commit plan — mark its talents as used so later clients can't take them
+    // Commit plan
     selected.push(bestPlan);
+    usedClientUids.add(client._uid);
+    if (sacrifice) sacrificedUids.add(sacrifice._uid);
     bestPlan.chosen.forEach(t => {
       usedTalentUids.add(t._uid);
       if (t.src === 'market') marketCardsUsed++;
     });
     spentMoney     += bestPlan.purchaseCost;
     culturaRunning += bestPlan.culturaDelta;
+  }
+
+  // ── Phase 3 ── Investment card evaluation ───────────────────────────────────
+  // Only consider if we haven't used our 1-market-card quota yet.
+  if (marketCardsUsed < MAX_MARKET_CARDS) {
+    const remainingTurns = Math.max(0, AI_LAST_REGULAR_TURN - (s.turn || 0));
+
+    // Gather investment (inversion) cards visible in the market that grant cultura
+    const investCandidates = s.mainMarket
+      .filter(c => c.type === 'inversion')
+      .map(c => ({ card: c, culturaGain: parseCulturaGain(c) }))
+      .filter(({ culturaGain }) => culturaGain > 0)
+      .sort((a, b) => (b.culturaGain / (b.card.cost || 1)) - (a.culturaGain / (a.card.cost || 1)));
+
+    for (const { card, culturaGain } of investCandidates) {
+      const cost = card.cost || 0;
+      if (cost > s.money - spentMoney) continue; // can't afford
+
+      // Case 1 — ROI: buying cultura enables hiring a talent that will earn fees over the
+      //   remaining turns. Rough estimate: each extra cultura = 1 playable talent slot
+      //   ≈ ~2K/turn fee potential. Investment worth it if total future value > cost.
+      const feePerTurnEstimate = 2;
+      const roiValue = culturaGain * feePerTurnEstimate * remainingTurns;
+      const worthROI = roiValue > cost && culturaRunning <= 1;
+
+      // Case 2 — Manager scarcity: cultura would allow buying a manager from the market
+      //   that we currently can't afford cultura-wise.
+      const marketHasManager = s.mainMarket.some(
+        t => t.type === 'talento' && (t.resources || []).some(r => r.type === 'manager')
+      );
+      const worthManager = culturaRunning + culturaGain <= 2 && marketHasManager && remainingTurns >= 2;
+
+      // Case 3 — Fallback: no client/talent plan was selected this turn; don't pass empty.
+      const noOtherPlay = selected.filter(p => !p.isInvestment).length === 0;
+
+      if (worthROI || worthManager || noOtherPlay) {
+        selected.push({ isInvestment: true, card, culturaGain, cost });
+        marketCardsUsed++;
+        spentMoney += cost;
+        culturaRunning += culturaGain; // cultura goes up immediately (no play cost for inversions)
+        break; // only buy one investment card per turn
+      }
+    }
   }
 
   return selected;
@@ -1266,12 +1406,39 @@ function aiPlanTurn(s) {
 function aiExecutePlan(s, plans) {
   let state = s;
 
-  // Collect what needs to happen
-  const clientsFromMarket = plans.map(p => p.client).filter(c => c.src === 'market');
+  // Step 0 ── Voluntarily release sacrificed clients to free their talents ────────
+  // Collect unique sacrifice victims (a client can only be sacrificed once)
+  const sacrificeMap = new Map();
+  plans.forEach(p => { if (p.sacrifice) sacrificeMap.set(p.sacrifice._uid, p.sacrifice); });
+
+  for (const victim of sacrificeMap.values()) {
+    const talents = victim.assignedTalents || [];
+    // Reverse cultura match bonuses (same logic as END_TURN eviction)
+    let culturaDelta = 0;
+    talents.forEach(t => {
+      if (t.mision && victim.mision && t.mision === victim.mision) culturaDelta -= 1;
+    });
+    state = {
+      ...state,
+      cultura: (state.cultura || 0) + culturaDelta,
+      // Remove victim from mesa; release its talents as standalone cards
+      mesa: [
+        ...state.mesa.filter(c => c._uid !== victim._uid),
+        ...talents.map((t, i) => ({ ...t, _x: 20 + i * 55, _y: 260 })),
+      ],
+      // Return victim to the client market
+      clientMarket: [{ ...victim, assignedTalents: [] }, ...state.clientMarket],
+    };
+    state = addLog(`🤖 ↔ Suelta ${victim.name} → libera talentos`, state);
+  }
+
+  // Collect what needs to happen (exclude investment pseudo-plans)
+  const clientPlans       = plans.filter(p => !p.isInvestment);
+  const clientsFromMarket = clientPlans.map(p => p.client).filter(c => c && c.src === 'market');
   const talentsToBuy      = [];
   const talentsFromHand   = [];
 
-  for (const plan of plans) {
+  for (const plan of clientPlans) {
     for (const t of plan.chosen) {
       if (t.src === 'market') talentsToBuy.push(t);
       else if (t.src === 'hand') talentsFromHand.push(t);
@@ -1290,6 +1457,22 @@ function aiExecutePlan(s, plans) {
     };
     state = addLog(`🤖 Mueve cliente: ${client.name}`, state);
     placedClients++;
+  }
+
+  // Step 1b ── Purchase investment cards (inversion): remove from market, apply cultura boost
+  const investmentPlans = plans.filter(p => p.isInvestment);
+  for (const inv of investmentPlans) {
+    const card = inv.card;
+    if (card.cost > state.money) continue;
+    state = {
+      ...state,
+      mainMarket: state.mainMarket.filter(c => c._uid !== card._uid),
+      money:      state.money - card.cost,
+      cultura:    (state.cultura || 0) + inv.culturaGain,
+      // Investment cards go to the mesa (played immediately, no cultura play cost for inversions)
+      mesa: [...state.mesa, { ...card, _x: 20, _y: 340 }],
+    };
+    state = addLog(`🤖 Inversión: ${card.name} (+${inv.culturaGain} Cultura, -${card.cost}K)`, state);
   }
 
   // Step 2 ── Buy market talents (remove from market, deduct money, add to hand)
@@ -1320,7 +1503,7 @@ function aiExecutePlan(s, plans) {
   }
 
   // Step 4 ── Assign talents to their clients (cultura +matchBonus per assignment)
-  for (const plan of plans) {
+  for (const plan of clientPlans) {
     const clientUid = plan.client._uid;
     for (const talent of plan.chosen) {
       const matchBonus = (talent.mision && plan.client.mision && talent.mision === plan.client.mision) ? 1 : 0;
@@ -1358,8 +1541,16 @@ function aiTakeTurn(state) {
   const plans = aiPlanTurn(s);
   if (plans.length > 0) {
     s = aiExecutePlan(s, plans);
-    const summary = plans.map(p => `${p.client.name} Lv${p.level} (+${p.fee}K)`).join(', ');
-    s = addLog(`🤖 Jugada: ${summary}`, s);
+    const parts = [];
+    for (const p of plans) {
+      if (p.isInvestment) {
+        parts.push(`${p.card.name} (+${p.culturaGain} Cultura, -${p.cost}K)`);
+      } else {
+        const swap = p.sacrifice ? ` (↔ ${p.sacrifice.name})` : '';
+        parts.push(`${p.client.name} Lv${p.level} (+${p.fee}K)${swap}`);
+      }
+    }
+    s = addLog(`🤖 Jugada: ${parts.join(', ')}`, s);
   } else {
     s = addLog('🤖 Sin jugada rentable este turno', s);
   }
@@ -1370,7 +1561,7 @@ function aiTakeTurn(state) {
 }
 
 // ─── GAME OVER ───────────────────────────────────────────────────────────────
-const LAST_REGULAR_TURN = 7;
+const LAST_REGULAR_TURN = AI_LAST_REGULAR_TURN; // alias kept for reducer references
 
 // Determine winner(s) from the final players array.
 // Tiebreakers: money → cultura → talents on mesa → draw
