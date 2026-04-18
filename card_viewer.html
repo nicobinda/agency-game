@@ -7,6 +7,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -203,6 +204,31 @@ const CARDS_DATA = {"clients":[{"id":"Cliente-3-001","type":"cliente","name":"Ar
 <script type="text/babel">
 const { useState, useMemo, useCallback, useRef } = React;
 
+// ─── ART IMAGE HELPERS ────────────────────────────────────────────────────────
+// Cards store art in two possible fields:
+//   artImage        — relative path used in the exported JSON (e.g. "card_images/Talento-3-001.png")
+//   _artImageData   — base64 data-URL for images uploaded during this session (NOT exported)
+// Always use artUrl(card) for display so both cases are handled.
+function artUrl(card) {
+  return card._artImageData || card.artImage || null;
+}
+
+// Derive the default export path for a card image based on its id.
+function artImagePath(card) {
+  const safe = (card.id || 'nueva-carta').replace(/[^a-zA-Z0-9_\-]/g, '_');
+  return `card_images/${safe}.png`;
+}
+
+// Convert a base64 data-URL to a Blob (used for ZIP export).
+function dataUrlToBlob(dataUrl) {
+  const [header, data] = dataUrl.split(',');
+  const mime = (header.match(/:(.*?);/) || ['', 'image/png'])[1];
+  const binary = atob(data);
+  const arr = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
 // ─── RESOURCE ICON SYSTEM ─────────────────────────────────────────────────────
 
 const RESOURCE_COLORS = {
@@ -372,7 +398,7 @@ function CardTalento({card}) {
     <div style={{position:'relative', width:'100%', height:'100%', overflow:'hidden', borderRadius:'inherit'}}>
 
       {/* ── Background (gray placeholder → artwork) ── */}
-      <div style={{position:'absolute', inset:0, background:card.artImage?`url(${card.artImage}) center/cover`:'#888'}}/>
+      <div style={{position:'absolute', inset:0, background:artUrl(card)?`url(${artUrl(card)}) center/cover`:'#888'}}/>
 
       {/* ── Left mission color bar ── */}
       <div style={{position:'absolute', left:0, top:0, bottom:0, width:BAR_W, background:missionColor}}/>
@@ -546,7 +572,7 @@ function CardCliente({card}) {
     <div style={{position:'relative', width:'100%', height:'100%', overflow:'hidden', borderRadius:'inherit'}}>
 
       {/* ── Background (gray placeholder → replaced by artwork) ── */}
-      <div style={{position:'absolute', inset:0, background:card.artImage?`url(${card.artImage}) center/cover`:'#888'}}/>
+      <div style={{position:'absolute', inset:0, background:artUrl(card)?`url(${artUrl(card)}) center/cover`:'#888'}}/>
 
       {/* ── Name banner ── */}
       <div style={{
@@ -674,7 +700,7 @@ function CardActionNew({ card, bgColor, costBg, costTextColor, costLabel,
     <div style={{position:'relative', width:'100%', height:'100%', overflow:'hidden', borderRadius:'inherit'}}>
 
       {/* ── Background (artwork placeholder) ── */}
-      <div style={{position:'absolute', inset:0, background:card.artImage?`url(${card.artImage}) center/cover`:bgColor}}/>
+      <div style={{position:'absolute', inset:0, background:artUrl(card)?`url(${artUrl(card)}) center/cover`:bgColor}}/>
 
       {/* ── Black border frame ── */}
       <div style={{
@@ -1082,7 +1108,10 @@ function CreateCardModal({ onClose, onCreate }) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => upd('artImage', ev.target.result);
+    reader.onload = ev => {
+      const path = artImagePath(draft);
+      setDraft(d => ({ ...d, artImage: path, _artImageData: ev.target.result }));
+    };
     reader.readAsDataURL(file);
     e.target.value = '';
   };
@@ -1305,17 +1334,18 @@ function CreateCardModal({ onClose, onCreate }) {
             {/* Background image upload */}
             <div style={sectionStyle}>
               <label style={labelStyle}>Imagen de fondo</label>
-              {draft.artImage && (
+              {artUrl(draft) && (
                 <div style={{position:'relative',marginBottom:8}}>
-                  <img src={draft.artImage} style={{width:'100%',height:80,objectFit:'cover',borderRadius:6,border:'1px solid #2d3347'}} alt="preview"/>
-                  <button onClick={()=>upd('artImage',null)} style={{position:'absolute',top:4,right:4,background:'rgba(0,0,0,0.7)',border:'none',color:'white',borderRadius:4,padding:'2px 6px',cursor:'pointer',fontSize:11}}>✕ Quitar</button>
+                  <img src={artUrl(draft)} style={{width:'100%',height:80,objectFit:'cover',borderRadius:6,border:'1px solid #2d3347'}} alt="preview"/>
+                  <div style={{fontSize:10,color:'#64748b',padding:'2px 4px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{draft.artImage}</div>
+                  <button onClick={()=>setDraft(d=>({...d,artImage:null,_artImageData:null}))} style={{position:'absolute',top:4,right:4,background:'rgba(0,0,0,0.7)',border:'none',color:'white',borderRadius:4,padding:'2px 6px',cursor:'pointer',fontSize:11}}>✕ Quitar</button>
                 </div>
               )}
               <button onClick={()=>imgRef.current?.click()} style={{...inputStyle,cursor:'pointer',textAlign:'center',color:'#94a3b8',width:'100%'}}>
-                📷 {draft.artImage ? 'Cambiar imagen' : 'Subir imagen de fondo'}
+                📷 {artUrl(draft) ? 'Cambiar imagen' : 'Subir imagen de fondo'}
               </button>
               <input ref={imgRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleImageUpload}/>
-              <div style={{fontSize:10,color:'#475569',marginTop:4}}>La imagen se guarda en base64 dentro del JSON del set.</div>
+              <div style={{fontSize:10,color:'#475569',marginTop:4}}>La imagen se exporta como archivo separado en la carpeta <code>card_images/</code>.</div>
             </div>
 
             <div style={{display:'flex',gap:8,marginTop:8}}>
@@ -1404,7 +1434,10 @@ function EditModal({card, onClose, onSave}) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => upd('artImage', ev.target.result);
+    reader.onload = ev => {
+      const path = artImagePath(draft);
+      setDraft(d => ({ ...d, artImage: path, _artImageData: ev.target.result }));
+    };
     reader.readAsDataURL(file);
     e.target.value = '';
   };
@@ -1611,17 +1644,18 @@ function EditModal({card, onClose, onSave}) {
             {/* Background image */}
             <div style={sectionStyle}>
               <label style={labelStyle}>Imagen de fondo</label>
-              {draft.artImage && (
+              {artUrl(draft) && (
                 <div style={{position:'relative',marginBottom:8}}>
-                  <img src={draft.artImage} style={{width:'100%',height:80,objectFit:'cover',borderRadius:6,border:'1px solid #2d3347'}} alt="preview"/>
-                  <button onClick={()=>upd('artImage',null)} style={{position:'absolute',top:4,right:4,background:'rgba(0,0,0,0.7)',border:'none',color:'white',borderRadius:4,padding:'2px 6px',cursor:'pointer',fontSize:11}}>✕ Quitar</button>
+                  <img src={artUrl(draft)} style={{width:'100%',height:80,objectFit:'cover',borderRadius:6,border:'1px solid #2d3347'}} alt="preview"/>
+                  <div style={{fontSize:10,color:'#64748b',padding:'2px 4px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{draft.artImage}</div>
+                  <button onClick={()=>setDraft(d=>({...d,artImage:null,_artImageData:null}))} style={{position:'absolute',top:4,right:4,background:'rgba(0,0,0,0.7)',border:'none',color:'white',borderRadius:4,padding:'2px 6px',cursor:'pointer',fontSize:11}}>✕ Quitar</button>
                 </div>
               )}
               <button onClick={()=>imgRef.current?.click()} style={{...inputStyle,cursor:'pointer',textAlign:'center',color:'#94a3b8',width:'100%'}}>
-                📷 {draft.artImage ? 'Cambiar imagen' : 'Subir imagen de fondo'}
+                📷 {artUrl(draft) ? 'Cambiar imagen' : 'Subir imagen de fondo'}
               </button>
               <input ref={imgRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleImageUpload}/>
-              <div style={{fontSize:10,color:'#475569',marginTop:4}}>La imagen se guarda en base64 dentro del JSON del set.</div>
+              <div style={{fontSize:10,color:'#475569',marginTop:4}}>La imagen se exporta como archivo separado en la carpeta <code>card_images/</code>.</div>
             </div>
 
             <div style={{display:'flex',gap:8,marginTop:8}}>
@@ -1785,12 +1819,18 @@ function App() {
   const handleCreate = useCallback(newCard=>{setCards(p=>[...p,newCard]);setShowCreate(false);},[setCards]);
 
   // ── Card set helpers ──
+  // Strip session-only fields (_artImageData) before export so the JSON stays clean.
+  const cleanForExport = card => {
+    const { _artImageData, ...rest } = card;
+    return rest;
+  };
+
   const buildJsonFromCards = useCallback(c=>({
-    clients:       c.filter(x=>x.type==='cliente'),
-    talents:       c.filter(x=>x.type==='talento'),
-    investments:   c.filter(x=>x.type==='inversion'),
-    strategies:    c.filter(x=>x.type==='estrategia'),
-    urgent_actions:c.filter(x=>x.type==='accion_urgente'),
+    clients:       c.filter(x=>x.type==='cliente').map(cleanForExport),
+    talents:       c.filter(x=>x.type==='talento').map(cleanForExport),
+    investments:   c.filter(x=>x.type==='inversion').map(cleanForExport),
+    strategies:    c.filter(x=>x.type==='estrategia').map(cleanForExport),
+    urgent_actions:c.filter(x=>x.type==='accion_urgente').map(cleanForExport),
     mission_colors: missionColors,
   }),[missionColors]);
 
@@ -1829,13 +1869,41 @@ function App() {
     e.target.value='';
   },[sets.length, buildCardsFromJson]);
 
-  const handleDownloadSet = useCallback(()=>{
-    const data = buildJsonFromCards(cards);
-    const name = sets[activeSetIdx]?.name ?? 'cards';
+  const handleDownloadSet = useCallback(async ()=>{
+    const data     = buildJsonFromCards(cards);
+    const baseName = (sets[activeSetIdx]?.name ?? 'cards').replace(/\s+/g,'_');
+    const jsonStr  = JSON.stringify(data, null, 2);
+
+    // Collect any cards that have freshly-uploaded images (base64 in _artImageData)
+    const withNewImages = cards.filter(c => c._artImageData);
+
+    if (withNewImages.length === 0) {
+      // No new images → plain JSON download (same as before)
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([jsonStr], {type:'application/json'}));
+      a.download = `${baseName}.json`;
+      a.click();
+      return;
+    }
+
+    // Has new images → bundle everything in a ZIP
+    // Structure:  {baseName}.json  +  card_images/{filename}.png (for each new image)
+    const zip = new JSZip();
+    zip.file(`${baseName}.json`, jsonStr);
+
+    const imgFolder = zip.folder('card_images');
+    for (const card of withNewImages) {
+      const filename = (card.artImage || artImagePath(card)).replace(/^card_images\//, '');
+      imgFolder.file(filename, dataUrlToBlob(card._artImageData));
+    }
+
+    const blob = await zip.generateAsync({ type: 'blob' });
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
-    a.download = `${name.replace(/\s+/g,'_')}.json`;
+    a.href = URL.createObjectURL(blob);
+    a.download = `${baseName}.zip`;
     a.click();
+
+    alert(`✅ Exportado como ZIP con ${withNewImages.length} imagen${withNewImages.length!==1?'es':''} en card_images/.\nDescomprimí el ZIP y colocá su contenido junto al archivo HTML.`);
   },[cards, sets, activeSetIdx, buildJsonFromCards]);
 
   const handleDeleteSet = useCallback(idx=>{

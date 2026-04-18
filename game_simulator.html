@@ -7,6 +7,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <!-- Firebase SDK (compat — works without a bundler) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -225,6 +228,54 @@
   });
 })();
 </script>
+<script>
+// ─── FIREBASE CONFIGURATION ───────────────────────────────────────────────────
+// To enable multiplayer:
+//   1. Go to https://console.firebase.google.com and create a project
+//   2. Add a Web app → copy the firebaseConfig object here
+//   3. In Firestore Database → Rules, allow read/write:
+//      allow read, write: if true;   ← for prototyping only
+//   4. Host this file on Firebase Hosting or any static host
+const FIREBASE_CONFIG = {
+  apiKey:            "REPLACE_WITH_YOUR_API_KEY",
+  authDomain:        "REPLACE_WITH_YOUR_AUTH_DOMAIN",
+  projectId:         "REPLACE_WITH_YOUR_PROJECT_ID",
+  storageBucket:     "REPLACE_WITH_YOUR_STORAGE_BUCKET",
+  messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
+  appId:             "REPLACE_WITH_YOUR_APP_ID",
+};
+
+// Initialize Firebase only when config is filled in
+let db = null;
+const FIREBASE_READY = FIREBASE_CONFIG.apiKey !== "REPLACE_WITH_YOUR_API_KEY";
+if (FIREBASE_READY) {
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+  } catch (e) {
+    console.warn('Firebase init failed:', e.message);
+  }
+}
+
+// Generate a readable 6-character room code (no confusable chars like 0/O 1/I)
+function generateRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+// Persistent anonymous player identity stored in localStorage
+function getOrCreatePlayerId() {
+  let id = localStorage.getItem('agencyPlayerId');
+  if (!id) {
+    id = 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6);
+    localStorage.setItem('agencyPlayerId', id);
+  }
+  return id;
+}
+</script>
+
 <script type="text/babel">
 const { useState, useReducer, useCallback, useRef, useEffect } = React;
 const CARDS_DATA = {"clients":[{"id":"Cliente-3-001","type":"cliente","name":"Arte 1","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"creativo","qty":2},{"type":"analista","qty":1},{"type":"manager","qty":2}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-002","type":"cliente","name":"Arte 2","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":2},{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-003","type":"cliente","name":"Arte 3","flavorText":"","artDescription":"","artImage":null,"mision":"arte","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":2},{"type":"desarrollo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-004","type":"cliente","name":"Deporte 1","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"analista","qty":2},{"type":"desarrollo","qty":1},{"type":"manager","qty":2}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-005","type":"cliente","name":"Deporte 2","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":2},{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-006","type":"cliente","name":"Deporte 3","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":2},{"type":"creativo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-007","type":"cliente","name":"Entretenimiento 1","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null},{"level":3,"requirements":[{"type":"desarrollo","qty":2},{"type":"creativo","qty":1},{"type":"manager","qty":1},{"type":"manager","qty":1}],"fee":18,"cultureRequirement":null}]},{"id":"Cliente-3-008","type":"cliente","name":"Entretenimiento 2","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1}],"fee":3,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":12,"cultureRequirement":null}]},{"id":"Cliente-3-009","type":"cliente","name":"Entretenimiento 3","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":2},{"type":"analista","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-010","type":"cliente","name":"Viajes 1","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":1},{"type":"desarrollo","qty":1},{"type":"creativo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-011","type":"cliente","name":"Viajes 2","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":1},{"type":"analista","qty":1},{"type":"desarrollo","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-012","type":"cliente","name":"Viajes 3","flavorText":"","artDescription":"","artImage":null,"mision":"viajes","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1}],"fee":2,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":1},{"type":"creativo","qty":1},{"type":"analista","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-013","type":"cliente","name":"Gastronomía 1","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"analista","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"analista","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-014","type":"cliente","name":"Gastronomía 2","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"desarrollo","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"desarrollo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]},{"id":"Cliente-3-015","type":"cliente","name":"Gastronomía 3","flavorText":"","artDescription":"","artImage":null,"mision":"gastronomia","effects":[],"levels":[{"level":1,"requirements":[{"type":"creativo","qty":1},{"type":"manager","qty":1}],"fee":6,"cultureRequirement":null},{"level":2,"requirements":[{"type":"creativo","qty":2},{"type":"manager","qty":1}],"fee":8,"cultureRequirement":null}]}],"talents":[{"id":"Talento-3-001","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-001.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-002","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-002.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-003","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-003.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-004","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-004.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-005","type":"talento","name":"Creativo Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-005.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-006","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-006.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-007","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-007.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-008","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-008.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-009","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-009.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-010","type":"talento","name":"Developer Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-010.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":1}],"effects":[]},{"id":"Talento-3-011","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-011.png","mision":"arte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-012","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-012.png","mision":"deporte","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-013","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-013.png","mision":"entretenimiento","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-014","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-014.png","mision":"viajes","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-015","type":"talento","name":"Analista Junior","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-015.png","mision":"gastronomia","cost":0,"recurringCost":1,"cultureRequirement":null,"resources":[{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-016","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-016.png","mision":"arte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-017","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-017.png","mision":"deporte","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-018","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-018.png","mision":"entretenimiento","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-019","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-019.png","mision":"viajes","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-020","type":"talento","name":"Manager","flavorText":"","artDescription":"","artImage":"card_images/Talento-3-020.png","mision":"gastronomia","cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"manager","qty":1}],"effects":[]},{"id":"Talento-3-021","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-022","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-023","type":"talento","name":"Hibrido Junior","flavorText":"","artDescription":"","artImage":null,"mision":null,"cost":0,"recurringCost":2,"cultureRequirement":null,"resources":[{"type":"hibrido","qty":1}],"effects":[]},{"id":"Talento-3-024","type":"talento","name":"AA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"analista","qty":2}],"effects":[]},{"id":"Talento-3-025","type":"talento","name":"CC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"creativo","qty":2}],"effects":[]},{"id":"Talento-3-026","type":"talento","name":"DD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":3,"cultureRequirement":null,"resources":[{"type":"desarrollo","qty":2}],"effects":[]},{"id":"Talento-3-027","type":"talento","name":"MA","flavorText":"","artDescription":"","artImage":null,"mision":"deporte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"analista","qty":1}],"effects":[]},{"id":"Talento-3-028","type":"talento","name":"MC","flavorText":"","artDescription":"","artImage":null,"mision":"arte","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"creativo","qty":1}],"effects":[]},{"id":"Talento-3-029","type":"talento","name":"MD","flavorText":"","artDescription":"","artImage":null,"mision":"entretenimiento","cost":0,"recurringCost":4,"cultureRequirement":null,"resources":[{"type":"manager","qty":1},{"type":"desarrollo","qty":1}],"effects":[]}],"investments":[{"id":"inv-3-001","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-002","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-003","type":"inversion","name":"Inversión Cultura 1","flavorText":"","artDescription":"","artImage":null,"cost":6,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 1 de Cultura"}]},{"id":"inv-3-004","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"inv-3-005","type":"inversion","name":"Inversión Cultura 2","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Agrega 2 de Cultura"}]},{"id":"Inv-3-006","type":"inversion","name":"Extra Card 1","flavorText":"","artDescription":"","artImage":null,"cost":8,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Roba 1 carta adicional al inicio de tu turno"}]},{"id":"Inv-3-006","type":"inversion","name":"Hand Size 1","flavorText":"","artDescription":"","artImage":null,"cost":5,"recurringCost":null,"bgColor":"#2D4A3E","effects":[{"description":"Puedes tener hasta 6 cartas en la mano"}]}],"strategies":[{"id":"estrategia-3-001","type":"estrategia","name":"Card Draw 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba dos cartas"}]},{"id":"estrategia-3-002","type":"estrategia","name":"Card Draw 3","flavorText":"","artDescription":"","artImage":null,"cost":7,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Roba 3 cartas"}]},{"id":"estrategia-3-003","type":"estrategia","name":"Destroy","flavorText":"","artDescription":"","artImage":null,"cost":10,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Mueve una carta del campo de juego de un oponente al descarte"}]},{"id":"estrategia-3-004","type":"estrategia","name":"Steal Talent","flavorText":"","artDescription":"","artImage":null,"cost":12,"persistent":false,"bgColor":"#2D2040","effects":[{"description":"Intercambia el control de un talento en tu zona de juego por un talento en la zona de juego de un oponente"}]}],"urgent_actions":[{"id":"urgent-3-001","type":"accion_urgente","name":"Card Cycle 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Mueve una carta del mercado al descarte"}]},{"id":"urgent-3-002","type":"accion_urgente","name":"Card Swap 1","flavorText":"","artDescription":"","artImage":null,"cost":2,"bgColor":"#3D1515","effects":[{"description":"Intercambia una carta de tu mano por una carta del mercado"}]},{"id":"urgent-3-003","type":"accion_urgente","name":"Counter 1","flavorText":"","artDescription":"","artImage":null,"cost":3,"bgColor":"#3D1515","effects":[{"description":"Cancela el efecto de una carta de Estrategia o de Acción Urgente."}]},{"id":"urgent-3-004","type":"accion_urgente","name":"Card Cycle 2","flavorText":"","artDescription":"","artImage":null,"cost":4,"bgColor":"#3D1515","effects":[{"description":"Mueve dos cartas del mercado al descarte"}]},{"id":"urgent-3-005","type":"accion_urgente","name":"Card Swap 2","flavorText":"","artDescription":"","artImage":null,"cost":5,"bgColor":"#3D1515","effects":[{"description":"Intercambia dos cartas de tu mano por dos cartas en el Mercado"}]}],"mission_colors":{"arte":"#9770e1","deporte":"#88ebf2","entretenimiento":"#BE4486","finanzas":"#9D846B","gastronomia":"#f2ca02","naturaleza":"#43E95A","retail":"#a77b93","tecnologia":"#6638B8","viajes":"#8c4026"}};
@@ -2329,8 +2380,299 @@ function ClientWithTalents({ card, scale, startDrag, openCtx, onHover, onHoverEn
 }
 
 // ─── APP ─────────────────────────────────────────────────────────────────────
+// ─── MULTIPLAYER LOBBY ────────────────────────────────────────────────────────
+// Shown as a modal overlay. onJoin({ roomCode, playerId, slotIndex, isHost })
+// is called when the game transitions from lobby → playing.
+function MultiplayerLobby({ onJoin, onCancel }) {
+  const [screen,   setScreen]   = useState('home'); // 'home' | 'waiting'
+  const [name,     setName]     = useState(() => localStorage.getItem('agencyPlayerName') || '');
+  const [joinCode, setJoinCode] = useState('');
+  const [status,   setStatus]   = useState('');
+  const [roomCode, setRoomCode] = useState(null);
+  const [lobbyData,setLobbyData]= useState(null);
+  const unsubRef  = useRef(null);
+  const playerId  = getOrCreatePlayerId();
+
+  useEffect(() => { if (name) localStorage.setItem('agencyPlayerName', name); }, [name]);
+  useEffect(() => () => { if (unsubRef.current) unsubRef.current(); }, []);
+
+  // Watch for host starting the game
+  useEffect(() => {
+    if (!lobbyData || lobbyData.phase !== 'playing' || !roomCode) return;
+    const slots   = lobbyData.lobbySlots || [];
+    const mySlot  = slots.find(s => s.id === playerId);
+    const slotIdx = mySlot ? mySlot.slotIndex : 0;
+    const isHost  = lobbyData.hostId === playerId;
+    if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
+    onJoin({ roomCode, playerId, slotIndex: slotIdx, isHost });
+  }, [lobbyData?.phase]);
+
+  const subscribe = (code) => {
+    if (unsubRef.current) unsubRef.current();
+    unsubRef.current = db.collection('games').doc(code).onSnapshot(snap => {
+      if (snap.exists) setLobbyData(snap.data());
+    });
+  };
+
+  const handleCreate = async () => {
+    if (!name.trim()) { setStatus('Ingresá tu nombre primero'); return; }
+    setStatus('Creando sala…');
+    const code = generateRoomCode();
+    try {
+      await db.collection('games').doc(code).set({
+        hostId: playerId,
+        phase: 'lobby',
+        lobbySlots: [{ id: playerId, name: name.trim(), slotIndex: 0, isAI: false }],
+        createdAt: Date.now(),
+      });
+      setRoomCode(code);
+      subscribe(code);
+      setStatus('');
+      setScreen('waiting');
+    } catch (e) { setStatus('Error: ' + e.message); }
+  };
+
+  const handleJoin = async () => {
+    if (!name.trim()) { setStatus('Ingresá tu nombre primero'); return; }
+    const code = joinCode.trim().toUpperCase();
+    if (code.length < 4) { setStatus('Código inválido'); return; }
+    setStatus('Buscando sala…');
+    try {
+      const snap = await db.collection('games').doc(code).get();
+      if (!snap.exists) { setStatus('Sala no encontrada'); return; }
+      const data = snap.data();
+      if (data.phase !== 'lobby') { setStatus('La partida ya comenzó'); return; }
+      const slots = data.lobbySlots || [];
+      if (slots.some(s => s.id === playerId)) {
+        // Re-joining same room
+        setRoomCode(code); subscribe(code); setStatus(''); setScreen('waiting'); return;
+      }
+      if (slots.length >= 4) { setStatus('Sala llena (máx. 4 jugadores)'); return; }
+      await db.collection('games').doc(code).update({
+        lobbySlots: [...slots, { id: playerId, name: name.trim(), slotIndex: slots.length, isAI: false }],
+      });
+      setRoomCode(code); subscribe(code); setStatus(''); setScreen('waiting');
+    } catch (e) { setStatus('Error: ' + e.message); }
+  };
+
+  const addAI = async () => {
+    if (!lobbyData || !roomCode) return;
+    const slots = lobbyData.lobbySlots || [];
+    if (slots.length >= 4) return;
+    const idx = slots.length;
+    await db.collection('games').doc(roomCode).update({
+      lobbySlots: [...slots, { id: `ai_${idx}`, name: `IA ${idx}`, slotIndex: idx, isAI: true }],
+    });
+  };
+
+  const removeSlot = async (slotIndex) => {
+    if (!lobbyData || !roomCode) return;
+    const reindexed = (lobbyData.lobbySlots || [])
+      .filter(s => s.slotIndex !== slotIndex)
+      .map((s, i) => ({ ...s, slotIndex: i }));
+    await db.collection('games').doc(roomCode).update({ lobbySlots: reindexed });
+  };
+
+  const handleStart = async () => {
+    if (!lobbyData || !roomCode) return;
+    const slots = lobbyData.lobbySlots || [];
+    if (slots.length === 0) return;
+    const aiConfig   = slots.map(s => s.isAI);
+    const initState  = createInitialState(4, slots.length, aiConfig);
+    const stateWithIds = {
+      ...initState,
+      players: initState.players.map((p, i) => ({
+        ...p,
+        name:   slots[i]?.name   || p.name,
+        slotId: slots[i]?.isAI   ? null : (slots[i]?.id || null),
+      })),
+    };
+    await db.collection('games').doc(roomCode).update({
+      phase: 'playing',
+      state: JSON.parse(JSON.stringify(stateWithIds)),
+    });
+  };
+
+  // ── Shared styles ──────────────────────────────────────────────────────────
+  const overlay = {
+    position:'fixed', inset:0, zIndex:9998,
+    background:'rgba(0,0,0,0.88)', backdropFilter:'blur(8px)',
+    display:'flex', alignItems:'center', justifyContent:'center',
+  };
+  const panel = {
+    background:'linear-gradient(145deg,#1a1d27,#0f1118)',
+    border:'1px solid #2d3347', borderRadius:20,
+    padding:'36px 44px', maxWidth:480, width:'90%',
+    boxShadow:'0 24px 80px rgba(0,0,0,0.7)',
+  };
+  const inp = {
+    width:'100%', background:'#0d0f18', border:'1px solid #2d3347',
+    borderRadius:8, padding:'10px 14px', color:'#e2e8f0',
+    fontSize:15, outline:'none', marginBottom:10,
+  };
+  const btn = (bg='#4f46e5', extra={}) => ({
+    width:'100%', background:`linear-gradient(135deg,${bg},${bg}bb)`,
+    border:'none', borderRadius:10, padding:'11px 24px',
+    color:'#fff', fontWeight:700, fontSize:14, cursor:'pointer',
+    marginBottom:8, ...extra,
+  });
+  const SLOT_COLORS = ['#818cf8','#34d399','#fb923c','#f472b6'];
+
+  const slots = lobbyData?.lobbySlots || [];
+  const isHost = lobbyData?.hostId === playerId;
+
+  // ── Home screen ────────────────────────────────────────────────────────────
+  if (screen === 'home') return (
+    <div style={overlay}>
+      <div style={panel}>
+        <div style={{ textAlign:'center', marginBottom:24 }}>
+          <div style={{ fontSize:40, marginBottom:8 }}>🌐</div>
+          <div style={{ fontSize:22, fontWeight:800, color:'#e2e8f0' }}>Multijugador Online</div>
+          <div style={{ fontSize:13, color:'#64748b', marginTop:4 }}>Jugá con amigos desde cualquier navegador</div>
+        </div>
+
+        <div style={{ marginBottom:14 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:'#64748b', letterSpacing:1, textTransform:'uppercase', marginBottom:5 }}>Tu nombre</div>
+          <input style={inp} placeholder="¿Cómo te llamás?" value={name}
+            onChange={e => setName(e.target.value)}
+            onKeyDown={e => e.key==='Enter' && handleCreate()} />
+        </div>
+
+        <button style={btn('#4f46e5')} onClick={handleCreate}>🏠 Crear nueva sala</button>
+
+        <div style={{ display:'flex', gap:8, marginTop:4 }}>
+          <input style={{ ...inp, flex:1, marginBottom:0 }}
+            placeholder="Código de sala"
+            value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())}
+            maxLength={8} onKeyDown={e => e.key==='Enter' && handleJoin()} />
+          <button style={btn('#059669', { width:'auto', padding:'10px 18px', marginBottom:0 })} onClick={handleJoin}>
+            Unirse
+          </button>
+        </div>
+
+        {status && <div style={{ color:'#f87171', fontSize:13, marginTop:10, textAlign:'center' }}>{status}</div>}
+
+        <button onClick={onCancel} style={{
+          width:'100%', background:'none', border:'1px solid #2d3347',
+          borderRadius:8, padding:'8px', color:'#64748b', cursor:'pointer', marginTop:14, fontSize:13,
+        }}>Cancelar</button>
+      </div>
+    </div>
+  );
+
+  // ── Waiting room (host + guest) ────────────────────────────────────────────
+  return (
+    <div style={overlay}>
+      <div style={panel}>
+        <div style={{ textAlign:'center', marginBottom:20 }}>
+          <div style={{ fontSize:11, fontWeight:700, letterSpacing:2, textTransform:'uppercase', color:'#64748b', marginBottom:4 }}>
+            Código de sala
+          </div>
+          <div style={{ fontSize:40, fontWeight:900, letterSpacing:6, color:'#a78bfa', fontFamily:'monospace' }}>
+            {roomCode}
+          </div>
+          <div style={{ fontSize:12, color:'#4a5577', marginTop:4 }}>Compartí este código con otros jugadores</div>
+        </div>
+
+        {/* Player slots */}
+        <div style={{ marginBottom:16 }}>
+          {slots.map((s, i) => (
+            <div key={i} style={{
+              display:'flex', alignItems:'center', gap:10,
+              background:'#0d0f18', border:'1px solid #2d3347',
+              borderRadius:8, padding:'10px 14px', marginBottom:6,
+            }}>
+              <div style={{ width:8, height:8, borderRadius:'50%', background:SLOT_COLORS[i], flexShrink:0 }} />
+              <span style={{ flex:1, fontWeight:600, fontSize:14,
+                color: s.id===playerId ? '#a78bfa' : '#e2e8f0' }}>
+                {s.name} {s.id===playerId ? <span style={{fontSize:11,color:'#6366f1'}}>(vos)</span> : null}
+                {s.isAI ? ' 🤖' : ''}
+              </span>
+              <span style={{ fontSize:11, color:'#4a5577' }}>J{i+1}</span>
+              {isHost && s.isAI && (
+                <button onClick={() => removeSlot(s.slotIndex)}
+                  style={{ background:'none', border:'none', color:'#ef4444', cursor:'pointer', fontSize:14, padding:'0 2px' }}>✕</button>
+              )}
+            </div>
+          ))}
+
+          {isHost && slots.length < 4 && (
+            <button onClick={addAI} style={{
+              width:'100%', background:'none', border:'1px dashed #2d3347',
+              borderRadius:8, padding:'10px 14px', color:'#4a5577',
+              cursor:'pointer', fontSize:13, textAlign:'left',
+            }}>+ Agregar slot IA</button>
+          )}
+        </div>
+
+        {status && <div style={{ color:'#f87171', fontSize:13, marginBottom:10, textAlign:'center' }}>{status}</div>}
+
+        {isHost ? (
+          <button style={btn('#4f46e5')} onClick={handleStart} disabled={slots.length===0}>
+            ▶ Empezar Partida ({slots.length} jugador{slots.length!==1?'es':''})
+          </button>
+        ) : (
+          <div style={{ textAlign:'center', color:'#64748b', fontSize:13, padding:'14px 0' }}>
+            ⏳ Esperando que el host inicie la partida…
+          </div>
+        )}
+
+        <button onClick={onCancel} style={{
+          width:'100%', background:'none', border:'1px solid #2d3347',
+          borderRadius:8, padding:'8px', color:'#64748b', cursor:'pointer', marginTop:4, fontSize:13,
+        }}>{isHost ? 'Cancelar sala' : 'Salir'}</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── APP ──────────────────────────────────────────────────────────────────────
 function App() {
-  const [state, dispatch] = useReducer(reducer, null, () => createInitialState(4));
+  // ── Online mode ────────────────────────────────────────────────────────────
+  // onlineRoom: { roomCode, playerId, slotIndex, isHost } — null when playing locally
+  const [onlineRoom,      setOnlineRoom]      = useState(null);
+  const [remoteState,     setRemoteState]     = useState(null);
+  const [showOnlineLobby, setShowOnlineLobby] = useState(false);
+
+  // ── Local game (always running — used when not in an online room) ──────────
+  const [localState, localDispatch] = useReducer(reducer, null, () => createInitialState(4));
+
+  // Active state: remote when online, local otherwise
+  const state = (onlineRoom && remoteState) ? remoteState : localState;
+
+  // ── Firestore listener: sync remote state updates to all clients ───────────
+  useEffect(() => {
+    if (!onlineRoom || !db) return;
+    const unsub = db.collection('games').doc(onlineRoom.roomCode)
+      .onSnapshot(snap => {
+        if (snap.exists) {
+          const d = snap.data();
+          if (d.state) setRemoteState(d.state);
+        }
+      });
+    return unsub;
+  }, [onlineRoom?.roomCode]);
+
+  // ── Unified dispatch: routes to local reducer or Firestore ────────────────
+  const dispatch = useCallback((action) => {
+    if (!onlineRoom || !db) {
+      localDispatch(action);
+      return;
+    }
+    if (!remoteState) return;
+    const s       = remoteState;
+    const activeP = s.players?.[s.activePlayer];
+    const isMyTurn   = activeP?.slotId === onlineRoom.playerId;
+    const isAITurn   = activeP?.isAI;
+    // Allow: my own human turn, OR host handling an AI turn
+    if (!isMyTurn && !(onlineRoom.isHost && isAITurn)) return;
+    const newState = reducer(s, action);
+    setRemoteState(newState); // optimistic local update
+    db.collection('games').doc(onlineRoom.roomCode)
+      .update({ state: JSON.parse(JSON.stringify(newState)), lastUpdate: Date.now() })
+      .catch(() => setRemoteState(s)); // revert on error
+  }, [onlineRoom, remoteState]);
+
   const {
     turn, numPlayers, activePlayer,
     mainDeck, clientDeck, discard,
@@ -2349,9 +2691,11 @@ function App() {
     if (!state.players) return;
     const p = state.players[state.activePlayer];
     if (!p || !p.isAI) return;
+    // In online mode, only the host handles AI turns
+    if (onlineRoom && !onlineRoom.isHost) return;
     const t = setTimeout(() => dispatch({ type: 'AI_TAKE_TURN' }), 400);
     return () => clearTimeout(t);
-  }, [state.activePlayer, state.turn]);
+  }, [state.activePlayer, state.turn, onlineRoom]);
   const viewingMesaData = state.players[viewingMesa]?.mesa || [];
 
   // ── Mission colors (reactive state — drives CSS + card inline styles) ──
@@ -2576,6 +2920,14 @@ function App() {
     <MissionColorsCtx.Provider value={missionColors}>
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden' }}>
 
+      {/* ── MULTIPLAYER LOBBY MODAL ── */}
+      {showOnlineLobby && db && (
+        <MultiplayerLobby
+          onJoin={cfg => { setOnlineRoom(cfg); setShowOnlineLobby(false); }}
+          onCancel={() => setShowOnlineLobby(false)}
+        />
+      )}
+
       {/* ── GAME OVER MODAL ── */}
       {gameOver && winners && (
         <div style={{
@@ -2650,6 +3002,26 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* ── ONLINE TURN INDICATOR ── */}
+      {onlineRoom && (() => {
+        const mySlot   = state.players?.find(p => p.slotId === onlineRoom.playerId);
+        const isMyTurn = mySlot && state.players[state.activePlayer]?.slotId === onlineRoom.playerId;
+        const activeName = state.players[state.activePlayer]?.name || '';
+        return (
+          <div style={{
+            background: isMyTurn
+              ? 'linear-gradient(90deg,#05311e,#065f46aa,#05311e)'
+              : 'linear-gradient(90deg,#0f1117,#1a1d2788,#0f1117)',
+            borderBottom: `1px solid ${isMyTurn ? '#059669aa' : '#2d334744'}`,
+            textAlign:'center', padding:'3px 0', fontSize:12, fontWeight:700,
+            color: isMyTurn ? '#34d399' : '#4a5577', letterSpacing:1,
+            flexShrink:0, transition:'all .3s',
+          }}>
+            {isMyTurn ? '⚡ Tu turno — ¡Jugá!' : `⏳ Turno de ${activeName}…`}
+          </div>
+        );
+      })()}
 
       {/* ── FINAL ROUND BANNER ── */}
       {finalRound && !gameOver && (
@@ -2747,6 +3119,22 @@ function App() {
           ))}
         </div>
 
+        {/* ── Online multiplayer button ── */}
+        {FIREBASE_READY && (
+          <button
+            onClick={() => setShowOnlineLobby(true)}
+            title={onlineRoom ? `Sala online: ${onlineRoom.roomCode}` : 'Multijugador online'}
+            style={{
+              background: onlineRoom ? '#05311e' : '#1a1d27',
+              border: `1px solid ${onlineRoom ? '#059669' : '#2d3347'}`,
+              borderRadius: 8, padding: '4px 10px',
+              color: onlineRoom ? '#34d399' : '#64748b',
+              cursor: 'pointer', fontSize: 13, fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
+            }}>
+            🌐 {onlineRoom ? onlineRoom.roomCode : 'Online'}
+          </button>
+        )}
         <button className="reset-btn" onClick={() => dispatch({ type:'RESET' })} title="Reiniciar">↺</button>
       </div>
 
